@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTC 2026深度解析：Groq LPU的技术诱惑与架构挑战</title>
+    <style>
+        /* 专业演示文稿样式 - 无滚动条设计 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            line-height: 1.6;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            overflow: hidden;
+        }
+        
+        .slide.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        .slide-content {
+            max-height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #e8584a;
+        }
+        
+        .slide-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #60a5fa;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 15px rgba(96, 165, 250, 0.3);
+        }
+        
+        .slide-subtitle {
+            font-size: 1.4rem;
+            color: #cbd5e1;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+        
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            height: calc(100vh - 200px);
+        }
+        
+        .text-panel {
+            padding-right: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .text-content {
+            flex: 1;
+            overflow: hidden;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .text-scroll {
+            height: 100%;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .text-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .text-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .text-scroll::-webkit-scrollbar-thumb {
+            background: #e8584a;
+            border-radius: 3px;
+        }
+        
+        .visual-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            padding: 25px;
+            border: 2px solid #475569;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-title {
+            font-size: 1.4rem;
+            color: #4ade80;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .chart-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .professional-chart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        /* 专业图表样式 */
+        .axis {
+            stroke: #94a3b8;
+            stroke-width: 2;
+        }
+        
+        .grid-line {
+            stroke: #475569;
+            stroke-width: 1;
+            stroke-dasharray: 5,5;
+        }
+        
+        .data-line {
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .data-point {
+            fill: white;
+            stroke-width: 2;
+            stroke: currentColor;
+        }
+        
+        .legend {
+            font-size: 12px;
+            fill: #cbd5e1;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 80%;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        .bar {
+            width: 60px;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .bar:hover {
+            transform: scale(1.05);
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        /* 内容样式 */
+        .key-point {
+            background: rgba(56, 178, 172, 0.15);
+            border-left: 5px solid #38b2ac;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .key-point h3 {
+            color: #38b2ac;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            font-size: 1rem;
+        }
+        
+        .comparison-table th {
+            background: #1e293b;
+            color: #60a5fa;
+            padding: 18px;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 3px solid #e8584a;
+        }
+        
+        .comparison-table td {
+            padding: 15px 18px;
+            border-bottom: 1px solid #475569;
+        }
+        
+        .comparison-table tr:hover {
+            background: rgba(96, 165, 250, 0.1);
+        }
+        
+        .highlight {
+            color: #4ade80;
+            font-weight: 700;
+        }
+        
+        .warning {
+            color: #f87171;
+            font-weight: 700;
+        }
+        
+        .data-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 5px solid #ef4444;
+            border-radius: 0 10px 10px 0;
+            padding: 20px;
+            margin: 25px 0;
+            line-height: 1.8;
+        }
+        
+        .section-title {
+            font-size: 1.6rem;
+            color: #60a5fa;
+            margin: 25px 0 18px;
+            border-left: 5px solid #e8584a;
+            padding-left: 15px;
+        }
+        
+        .bullet-list {
+            margin: 18px 0;
+            padding-left: 30px;
+        }
+        
+        .bullet-list li {
+            margin: 10px 0;
+            line-height: 1.7;
+        }
+        
+        /* 导航控制 */
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: rgba(232, 88, 74, 0.95);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(232, 88, 74, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-btn:hover {
+            background: #e8584a;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(232, 88, 74, 0.7);
+        }
+        
+        .slide-counter {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            background: rgba(30, 41, 59, 0.95);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            border: 2px solid #475569;
+            font-weight: 600;
+        }
+        
+        .author-badge {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(30, 41, 59, 0.95);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            color: #94a3b8;
+            border: 2px solid #475569;
+            font-weight: 600;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .content-area {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .text-panel {
+                padding-right: 0;
+                height: 50%;
+            }
+            
+            .visual-panel {
+                height: 50%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 25px;
+            }
+            
+            .slide-title {
+                font-size: 2.2rem;
+            }
+            
+            .slide-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .navigation {
+                bottom: 25px;
+                right: 25px;
+            }
+            
+            .nav-btn {
+                padding: 12px 24px;
+                font-size: 1rem;
+            }
+            
+            .slide-counter {
+                bottom: 25px;
+                left: 25px;
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .author-badge {
+                top: 20px;
+                right: 20px;
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-height: 800px) {
+            .slide-content {
+                gap: 20px;
+            }
+            
+            .slide-title {
+                font-size: 2.4rem;
+            }
+            
+            .content-area {
+                height: calc(100vh - 180px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="author-badge">作者：nabla</div>
+        
+        <!-- Slide 1: 标题页 -->
+        <div class="slide active" id="slide1">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">GTC 2026深度解析</h1>
+                    <p class="slide-subtitle">Groq LPU的技术诱惑与架构挑战</p>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-panel">
+                        <div class="text-content">
+                            <div class="text-scroll">
+                                <div class="key-point">
+                                    <h3>核心问题</h3>
+                                    <p>除了低时延推理，Groq的LPU的商业第一性是什么？AFD分离来了，PD分离过时了？Rubin这一代LPU用起来的架构挑战有哪些？</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>TLDR总结</h3>
+                                    <p>本文从GTC Keynote推理性能图的细节出发，解读LPU的价值与取舍。Groq LPU是一颗用算力和容量换极致带宽的确定性执行芯片，用三星4nm生产，完全不依赖台积电和内存厂的产能。</p>
+                                </div>
+                                
+                                <div class="data-box">
+                                    <p><strong>白话版：</strong></p>
+                                    <ol class="bullet-list">
+                                        <li>因为产能供不应求，在不依赖台积电，不和Rubin抢wafer和memory的前提下，NV额外用三星的产能做了Groq LPU。</li>
+                                        <li>因为没用memory，Groq LPU用SRAM堆了巨大的带宽，代价是巨小的算力和容量。</li>
+                                        <li>因为容量小算力小，Groq针对低时延场景把decode拆分成attention和ffn，这种部署叫AFD。</li>
+                                        <li>AFD每层要2次通信，1次通信要7跳，跳来跳去时延大很难受。</li>
+                                        <li>AFD利用率也是问题，需要一个全新的调度框架提升利用率。</li>
+                                    </ol>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>演讲结构</h3>
+                                    <p>1. GTC关键图表解析 • 2. Groq LPU技术架构 • 3. AFD分离与三大挑战 • 4. 解决方案与展望</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="visual-panel">
+                        <div class="chart-container">
+                            <div class="chart-title">GTC 2026关键性能图表</div>
+                            <div class="chart-area">
+                                <div class="professional-chart" id="gtc-chart">
+                                    <!-- SVG图表将通过JavaScript生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 2: GTC图表深度解析 -->
+        <div class="slide" id="slide2">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">GTC关键图表：隐藏的技术细节</h1>
+                    <p class="slide-subtitle">从Pareto前沿看LPU的价值定位</p>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-panel">
+                        <div class="text-content">
+                            <div class="text-scroll">
+                                <h3 class="section-title">图表核心信息</h3>
+                                <ul class="bullet-list">
+                                    <li><span class="highlight">纵轴</span>：吞吐效率（TPS/MW - Tokens Per Second per Megawatt）</li>
+                                    <li><span class="highlight">横轴</span>：交互性（TPS/User - Tokens Per Second per User）</li>
+                                    <li><span class="highlight">四个市场层级</span>：
+                                        <ul class="bullet-list">
+                                            <li>Free（Qwen 225B, 50 TPS, $0）</li>
+                                            <li>Medium（Kimi 1T, 100 TPS, $3）</li>
+                                            <li>High（GPT 2T, 200 TPS, $6）</li>
+                                            <li>Premium（GPT 2T, 400 TPS, $45）</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                
+                                <h3 class="section-title">关键发现</h3>
+                                <div class="key-point">
+                                    <h3>LPX的价值定位</h3>
+                                    <p><span class="highlight">左边市场（50-100 TPS）</span>：Rubin NVL72独立即可满足</p>
+                                    <p><span class="highlight">右边市场（200-400 TPS）</span>：Rubin单独吞吐急剧下降，而<span class="warning">Rubin + LPX组合维持了高性能</span></p>
+                                    <p><span class="warning">性能对比</span>：在400 TPS下，Rubin + LPX比Blackwell高<span class="highlight">35倍</span>的吞吐效率</p>
+                                </div>
+                                
+                                <h3 class="section-title">隐藏的两个关键细节</h3>
+                                <div class="key-point">
+                                    <h3>细节一：Rubin + LPX曲线几乎是平的</h3>
+                                    <p>从200 TPS到400 TPS，吞吐几乎没有下降。而Rubin NVL72随着TPS/User提高急剧下降。</p>
+                                    <p><span class="warning">技术原因</span>：GPU在高TPS要求小batch，小batch算力利用率低；LPU的算力带宽比只有4，从一开始就没吃到大batch的算力收益</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>细节二：右半边是2T模型，LPU的容量撑不住</h3>
+                                    <p>High/Premium档对应的是<span class="highlight">GPT MoE 2T模型</span>。即使W4量化也要1 TB。</p>
+                                    <p>LPX整个机柜的SRAM只有128 GB（256颗LPU × 500MB），连1/8都放不下。</p>
+                                </div>
+                                
+                                <div class="data-box">
+                                    <p><strong>根本性权衡：</strong> LPU用算力和容量换来了极致带宽。35倍的TPS/MW提升背后，是算力天花板（平线）和容量缺口（装不下2T）。理解了这个trade-off，才能理解后面AFD架构为什么要这么拆。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="visual-panel">
+                        <div class="chart-container">
+                            <div class="chart-title">性能对比分析</div>
+                            <div class="chart-area">
+                                <div class="professional-chart" id="performance-chart">
+                                    <!-- 性能对比图表将通过JavaScript生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3: Groq LPU技术架构 -->
+        <div class="slide" id="slide3">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">Groq LPU技术架构</h1>
+                    <p class="slide-subtitle">用算力和容量换极致带宽</p>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-panel">
+                        <div class="text-content">
+                            <div class="text-scroll">
+                                <h3 class="section-title">2.1 商业背景：产能是第一性</h3>
+                                <ul class="bullet-list">
+                                    <li><span class="highlight">交易结构</span>：2025年底，英伟达以200亿美元获得Groq的IP授权并收编核心团队</li>
+                                    <li><span class="highlight">战略考量</span>：IP license + hiring（非法律意义上的收购），避免反垄断审查</li>
+                                    <li><span class="highlight">产能战略</span>：三星SF4（4nm），不占台积电N3产能，不需要HBM，不需要CoWoS</li>
+                                </ul>
+                                
+                                <div class="data-box">
+                                    <p><strong>小结：</strong> LP30用三星SF4，不占台积电N3产能，不需要HBM，不需要CoWoS。英伟达在不牺牲GPU产能的情况下，开辟了一条完全独立的增量产线。产能，是这笔交易的第一性。</p>
+                                </div>
+                                
+                                <h3 class="section-title">2.2 LP30芯片架构对比</h3>
+                                
+                                <table class="comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>指标</th>
+                                            <th>LP30（单卡）</th>
+                                            <th>Rubin Ultra GPU（单卡）</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="highlight">容量</span></td>
+                                            <td>500 MB SRAM（片上）</td>
+                                            <td>288 GB HBM4（片外）</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="highlight">带宽</span></td>
+                                            <td>150 TB/s</td>
+                                            <td>22 TB/s</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="highlight">FP8算力（dense）</span></td>
+                                            <td>1.2 PFLOPS</td>
+                                            <td>~15.75 PFLOPS</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="highlight">算力带宽比</span></td>
+                                            <td><span class="warning">4</span></td>
+                                            <td><span class="warning">~358</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="highlight">工艺/封装</span></td>
+                                            <td>三星SF4，单die，无先进封装</td>
+                                            <td>台积电N3P + CoWoS + HBM4</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <div class="key-point">
+                                    <h3>算力带宽比 = 4 的含义</h3>
+                                    <p>batch size超过个位数就进入Compute-bound，SRAM带宽优势消失。</p>
+                                    <p><span class="warning">设计哲学</span>：只做一件事——在batch=1以极低延迟完成内存密集型运算。</p>
+                                </div>
+                                
+                                <h3 class="section-title">2.3 集群及互联架构</h3>
+                                <ul class="bullet-list">
+                                    <li><span class="highlight">ComputeTray（1U计算托盘）</span>：8颗LP30 + 2颗Altera FPGA（FEL）+ Intel Granite Rapids CPU + BlueField-4网卡</li>
+                                    <li><span class="highlight">Fabric Expansion Logic（FEL）</span>：2颗FPGA挂载256GB DDR5，协议桥接 + 参数暂存</li>
+                                    <li><span class="highlight">互连拓扑</span>：四级带宽衰减（5.6T → 3.1T → 400G → 400G）</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="visual-panel">
+                        <div class="chart-container">
+                            <div class="chart-title">LPU vs GPU架构对比</div>
+                            <div class="chart-area">
+                                <div class="professional-chart" id="architecture-chart">
+                                    <!-- 架构对比图表将通过JavaScript生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: 确定性执行原理 -->
+        <div class="slide" id="slide4">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">确定性执行原理</h1>
+                    <p class="slide-subtitle">从兜不确定性到消除不确定性</p>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-panel">
+                        <div class="text-content">
+                            <div class="text-scroll">
+                                <h3 class="section-title">传统芯片的"不确定性兜底"</h3>
+                                <p>现代芯片架构的大部分复杂性，都是在兜住不确定性：</p>
+                                <ul class="bullet-list">
+                                    <li><span class="highlight">多级缓存</span>：赌数据在不在附近</li>
+                                    <li><span class="highlight">乱序执行</span>：填住等待的空隙</li>
+                                    <li><span class="highlight">重排序缓冲区、指令队列、Store Buffer</span>：在不确定的延迟下维持吞吐</li>
+                                    <li><span class="highlight">网络层面的拥塞控制、动态路由、仲裁器</span>：应对数据包到达时间和路径的不确定性</li>
+                                </ul>
+                                
+                                <div class="data-box">
+                                    <p><strong>本质：</strong> 用面积和复杂度换取对不确定性的容忍。它们很有效，但也意味着芯片的大量面积不是在"算"，而是在"等"和"猜"。</p>
+                                </div>
+                                
+                                <h3 class="section-title">Groq的逆向思维：从源头消除不确定性</h3>
+                                <ul class="bullet-list">
+                                    <li><span class="highlight">单层Scratchpad SRAM</span>：没有缓存层次，不存在cache miss</li>
+                                    <li><span class="highlight">编译器静态调度</span>：编译时决定每个时钟周期的数据位置和指令</li>
+                                    <li><span class="highlight">确定性片间网络</span>：编译时规划通信路径和时序，没有运行时争用</li>
+                                    <li><span class="highlight">硬件deskew指令</span>：周期性校正多芯片时钟漂移，维持全局同步</li>
+                                </ul>
+                                
+                                <div class="key-point">
+                                    <h3>面积重新分配</h3>
+                                    <p><span class="warning">省下来的面积全部填了SRAM</span>：</p>
+                                    <ul class="bullet-list">
+                                        <li>不需要L1/L2/L3缓存</li>
+                                        <li>不需要乱序执行单元</li>
+                                        <li>不需要重排序缓冲区</li>
+                                        <li>不需要指令队列</li>
+                                        <li>不需要拥塞控制硬件</li>
+                                    </ul>
+                                    <p><span class="highlight">结果</span>：LP30能在一颗die上塞500MB、做到150TB/s带宽</p>
+                                </div>
+                                
+                                <div class="data-box">
+                                    <p><strong>代价：灵活性</strong> 模型架构变了就要重新编译。大模型架构迭代速度极快，LPU的先编译架构能否跟上TensorRT-LLM的适配节奏，决定了400-500万颗LPU是"卖出去就能用"，还是"卖出去了但用不起来"。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="visual-panel">
+                        <div class="chart-container">
+                            <div class="chart-title">确定性执行 vs 传统执行</div>
+                            <div class="chart-area">
+                                <div class="professional-chart" id="execution-chart">
+                                    <!-- 执行时间线对比图表将通过JavaScript生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: AFD分离与三大挑战 -->
+        <div class="slide" id="slide5">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">AFD分离与三大挑战</h1>
+                    <p class="slide-subtitle">从PD分离到AFD分离的演进</p>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-panel">
+                        <div class="text-content">
+                            <div class="text-scroll">
+                                <h3 class="section-title">3.1 从PD分离到AFD分离</h3>
+                                <div class="key-point">
+                                    <h3>PD分离（Prefill-Decode分离）</h3>
+                                    <p><span class="highlight">原理</span>：Prefill（上下文编码）和Decode（自回归生成）对延迟的敏感度不同</p>
+                                    <p><span class="highlight">部署</span>：Prefill用GPU（高吞吐），Decode用LPU（低延迟）</p>
+                                    <p><span class="highlight">基础</span>：SLA（服务等级协议）差异</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>AFD分离（Attention-FFN-Decode分离）</h3>
+                                    <p><span class="highlight">原理</span>：将Decode进一步拆分为Attention和FFN（前馈网络）</p>
+                                    <p><span class="highlight">部署</span>：
+                                        <ul class="bullet-list">
+                                            <li><span class="warning">Attention</span>：GPU（容量大，算力高）</li>
+                                            <li><span class="highlight">FFN</span>：LPU（带宽高，延迟低）</li>
+                                            <li><span class="warning">Decode</span>：协调层</li>
+                                        </ul>
+                                    </p>
+                                    <p><span class="highlight">基础</span>：必须靠异构硬件</p>
+                                </div>
+                                
+                                <h3 class="section-title">3.2 挑战一：容量——SRAM放不下万亿模型</h3>
+                                <ul class="bullet-list">
+                                    <li><span class="highlight">GPT MoE 2T模型</span>：W4量化后约1 TB</li>
+                                    <li><span class="highlight">LPX机柜SRAM</span>：128 GB（256颗 × 500MB）</li>
+                                    <li><span class="warning">缺口</span>：仅能容纳1/8的模型参数</li>
+                                    <li><span class="highlight">FEL DDR5的局限性</span>：256 GB容量，~400 GB/s带宽，比SRAM慢375倍</li>
+                                </ul>
+                                
+                                <h3 class="section-title">3.3 挑战二：通信——每层两次跨机柜以太网</h3>
+                                <div class="key-point">
+                                    <h3>AFD通信模式</h3>
+                                    <p style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin: 10px 0;">
+                                        GPU（Attention） → LPU（FFN） → GPU（Attention） → ...
+                                    </p>
+                                    <ul class="bullet-list">
+                                        <li><span class="highlight">每层</span>：2次跨机柜通信</li>
+                                        <li><span class="highlight">每次通信</span>：7跳（GPU HBM → GPU内存控制器 → PCIe → CPU → 以太网卡 → 交换机 → LPU FEL → LPU SRAM）</li>
+                                        <li><span class="warning">通信开销</span>：在400 TPS（2.5 ms/token）场景下，通信可能吃掉<span class="highlight">40%</span>的耗时</li>
+                                    </ul>
+                                </div>
+                                
+                                <h3 class="section-title">3.4 挑战三：调度——BSP失效带来的颠覆式需求</h3>
+                                <div class="key-point">
+                                    <h3>BSP（Bulk Synchronous Parallel）模型的失效</h3>
+                                    <p><span class="highlight">传统模式</span>：所有芯片完成当前层 → 全局同步 → 进入下一层</p>
+                                    <p><span class="warning">AFD问题</span>：GPU和LPU计算时间不同，强制同步造成资源闲置</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>全异步调度的需求</h3>
+                                    <p><span class="highlight">目标</span>：让GPU和LPU各自以最快速度推进，通过流水线隐藏通信延迟</p>
+                                    <p><span class="warning">挑战</span>：需要全新的调度框架和编译器支持</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="visual-panel">
+                        <div class="chart-container">
+                            <div class="chart-title">AFD分离架构与通信挑战</div>
+                            <div class="chart-area">
+                                <div class="professional-chart" id="afd-chart">
+                                    <!-- AFD分离架构图表将通过JavaScript生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: 解决方案与展望 -->
+        <div class="slide" id="slide6">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">解决方案与展望</h1>
+                    <p class="slide-subtitle">全异步调度 + 硬件升级</p>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-panel">
+                        <div class="text-content">
+                            <div class="text-scroll">
+                                <h3 class="section-title">4.1 软件解法：全异步调度框架</h3>
+                                <div class="key-point">
+                                    <h3>核心思想</h3>
+                                    <p><span class="highlight">解耦</span>：GPU和LPU不再强同步</p>
+                                    <p><span class="highlight">流水线</span>：GPU计算第N层Attention时，LPU计算第N-1层FFN</p>
+                                    <p><span class="highlight">缓冲区</span>：中间结果缓冲，平滑计算和通信的波动</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>技术挑战</h3>
+                                    <ul class="bullet-list">
+                                        <li><span class="highlight">依赖关系管理</span>：确保数据一致性</li>
+                                        <li><span class="highlight">资源调度</span>：动态分配计算和通信资源</li>
+                                        <li><span class="highlight">容错机制</span>：处理硬件故障和性能波动</li>
+                                    </ul>
+                                </div>
+                                
+                                <h3 class="section-title">4.2 硬件升级路径</h3>
+                                <div class="key-point">
+                                    <h3>短期（2026-2027）：FEL ASIC化</h3>
+                                    <p><span class="highlight">目标</span>：用定制ASIC替换FPGA</p>
+                                    <p><span class="highlight">收益</span>：降低延迟，提高能效，增加带宽</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>中期（2027-2028）：C2C直连GPU-LPU</h3>
+                                    <p><span class="highlight">目标</span>：绕过以太网，实现GPU和LPU的直接高速互连</p>
+                                    <p><span class="highlight">技术</span>：NVLink-C2C桥接芯片</p>
+                                    <p><span class="highlight">收益</span>：通信延迟降低10倍，带宽提高10倍</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>长期（2028+）：统一内存架构</h3>
+                                    <p><span class="highlight">目标</span>：GPU HBM和LPU SRAM共享统一地址空间</p>
+                                    <p><span class="highlight">技术</span>：CXL 3.0+，内存语义网络</p>
+                                    <p><span class="highlight">收益</span>：彻底消除数据拷贝，实现真正的异构计算</p>
+                                </div>
+                                
+                                <h3 class="section-title">4.3 结论：确定性计算的新范式</h3>
+                                <div class="data-box">
+                                    <p><strong>技术范式转移：</strong> Groq LPU代表了一种根本性的技术范式转移：从用复杂度兜住不确定性，到用确定性换掉复杂度。</p>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>商业逻辑重构</h3>
+                                    <ol class="bullet-list">
+                                        <li><span class="highlight">第一性</span>：产能独立，不依赖台积电和内存厂</li>
+                                        <li><span class="highlight">第二性</span>：用算力和容量换极致带宽</li>
+                                        <li><span class="highlight">第三性</span>：确定性执行带来的服务质量保证</li>
+                                    </ol>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>最终判断</h3>
+                                    <p>LPU不是GPU的替代品，而是GPU的补充。在AI推理的Pareto前沿上，GPU+LPU的异构组合正在定义新的性能边界。成功的关键在于能否解决AFD分离带来的三大挑战，这需要芯片、软件、系统三个层面的协同创新。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="visual-panel">
+                        <div class="chart-container">
+                            <div class="chart-title">技术演进路径</div>
+                            <div class="chart-area">
+                                <div class="professional-chart" id="roadmap-chart">
+                                    <!-- 技术演进路径图表将通过JavaScript生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 导航控制 -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="prevSlide()">
+                <span>←</span> 上一页
+            </button>
+            <button class="nav-btn" onclick="nextSlide()">
+                下一页 <span>→</span>
+            </button>
+        </div>
+        
+        <div class="slide-counter">
+            第 <span id="current-slide">1</span> 页 / 共 <span id="total-slides">6</span> 页
+        </div>
+    </div>
+
+    <script>
+        // 幻灯片管理
+        let currentSlide = 1;
+        const totalSlides = 6;
+        
+        function showSlide(n) {
+            // 隐藏所有幻灯片
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // 显示选中的幻灯片
+            const slide = document.getElementById(`slide${n}`);
+            if (slide) {
+                slide.classList.add('active');
+                currentSlide = n;
+                updateSlideCounter();
+                
+                // 在显示幻灯片后生成图表
+                setTimeout(() => {
+                    generateChartForSlide(n);
+                }, 100);
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        }
+        
+        function updateSlideCounter() {
+            document.getElementById('current-slide').textContent = currentSlide;
+            document.getElementById('total-slides').textContent = totalSlides;
+        }
+        
+        // 键盘导航
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+                e.preventDefault();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+                e.preventDefault();
+            }
+        });
+        
+        // 触摸滑动支持
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    nextSlide(); // 向左滑动
+                } else {
+                    prevSlide(); // 向右滑动
+                }
+            }
+        }
+        
+        // 图表生成函数
+        function generateChartForSlide(slideNumber) {
+            switch(slideNumber) {
+                case 1:
+                    generateGTCChart();
+                    break;
+                case 2:
+                    generatePerformanceChart();
+                    break;
+                case 3:
+                    generateArchitectureChart();
+                    break;
+                case 4:
+                    generateExecutionChart();
+                    break;
+                case 5:
+                    generateAFDChart();
+                    break;
+                case 6:
+                    generateRoadmapChart();
+                    break;
+            }
+        }
+        
+        // 图表1: GTC性能图表
+        function generateGTCChart() {
+            const container = document.getElementById('gtc-chart');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="bar-chart">
+                    <div class="bar" style="height: 40%; background: linear-gradient(to top, #3b82f6, #60a5fa);">
+                        <div class="bar-value">50 TPS</div>
+                        <div class="bar-label">Free</div>
+                    </div>
+                    <div class="bar" style="height: 60%; background: linear-gradient(to top, #8b5cf6, #a78bfa);">
+                        <div class="bar-value">100 TPS</div>
+                        <div class="bar-label">Medium</div>
+                    </div>
+                    <div class="bar" style="height: 80%; background: linear-gradient(to top, #f59e0b, #fbbf24);">
+                        <div class="bar-value">200 TPS</div>
+                        <div class="bar-label">High</div>
+                    </div>
+                    <div class="bar" style="height: 100%; background: linear-gradient(to top, #ef4444, #f87171);">
+                        <div class="bar-value">400 TPS</div>
+                        <div class="bar-label">Premium</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 0.9rem;">
+                    <p>纵轴: TPS/MW | 横轴: TPS/User</p>
+                    <p>Rubin + LPX 在400 TPS下比Blackwell高35倍</p>
+                </div>
+            `;
+        }
+        
+        // 图表2: 性能对比图表
+        function generatePerformanceChart() {
+            const container = document.getElementById('performance-chart');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <svg width="100%" height="100%" viewBox="0 0 800 500">
+                    <!-- 坐标轴 -->
+                    <line x1="80" y1="400" x2="720" y2="400" class="axis" />
+                    <line x1="80" y1="400" x2="80" y2="100" class="axis" />
+                    
+                    <!-- 网格线 -->
+                    ${Array.from({length: 5}).map((_, i) => `
+                        <line x1="80" y1="${400 - i * 75}" x2="720" y2="${400 - i * 75}" class="grid-line" />
+                        <text x="60" y="${400 - i * 75 + 5}" class="legend">${i * 25}%</text>
+                    `).join('')}
+                    
+                    <!-- X轴标签 -->
+                    <text x="400" y="450" text-anchor="middle" class="legend">TPS/User</text>
+                    <text x="60" y="250" text-anchor="middle" class="legend" transform="rotate(-90, 60, 250)">吞吐效率 (相对值)</text>
+                    
+                    <!-- 数据点 -->
+                    <circle cx="180" cy="250" r="8" class="data-point" style="color: #3b82f6;" />
+                    <circle cx="300" cy="200" r="8" class="data-point" style="color: #3b82f6;" />
+                    <circle cx="420" cy="150" r="8" class="data-point" style="color: #3b82f6;" />
+                    <circle cx="540" cy="100" r="8" class="data-point" style="color: #3b82f6;" />
+                    
+                    <circle cx="180" cy="380" r="8" class="data-point" style="color: #10b981;" />
+                    <circle cx="300" cy="375" r="8" class="data-point" style="color: #10b981;" />
+                    <circle cx="420" cy="370" r="8" class="data-point" style="color: #10b981;" />
+                    <circle cx="540" cy="365" r="8" class="data-point" style="color: #10b981;" />
+                    
+                    <!-- 连线 -->
+                    <polyline points="180,250 300,200 420,150 540,100" class="data-line" style="stroke: #3b82f6;" />
+                    <polyline points="180,380 300,375 420,370 540,365" class="data-line" style="stroke: #10b981;" />
+                    
+                    <!-- 图例 -->
+                    <circle cx="650" cy="150" r="6" style="fill: #3b82f6;" />
+                    <text x="670" y="155" class="legend">Rubin NVL72</text>
+                    
+                    <circle cx="650" cy="180" r="6" style="fill: #10b981;" />
+                    <text x="670" y="185" class="legend">Rubin + LPX</text>
+                </svg>
+            `;
+        }
+        
+        // 图表3: 架构对比图表
+        function generateArchitectureChart() {
+            const container = document.getElementById('architecture-chart');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="bar-chart">
+                    <div class="bar" style="height: 15%; background: linear-gradient(to top, #ef4444, #f87171);">
+                        <div class="bar-value">1.2 PFLOPS</div>
+                        <div class="bar-label">LPU算力</div>
+                    </div>
+                    <div class="bar" style="height: 100%; background: linear-gradient(to top, #ef4444, #f87171); margin-left: 20px;">
+                        <div class="bar-value">150 TB/s</div>
+                        <div class="bar-label">LPU带宽</div>
+                    </div>
+                    <div class="bar" style="height: 100%; background: linear-gradient(to top, #3b82f6, #60a5fa); margin-left: 40px;">
+                        <div class="bar-value">15.75 PFLOPS</div>
+                        <div class="bar-label">GPU算力</div>
+                    </div>
+                    <div class="bar" style="height: 22%; background: linear-gradient(to top, #3b82f6, #60a5fa); margin-left: 20px;">
+                        <div class="bar-value">22 TB/s</div>
+                        <div class="bar-label">GPU带宽</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px; color: #94a3b8;">
+                    <p>算力带宽比: LPU=4 vs GPU=358</p>
+                    <p>LPU用算力换带宽，专门优化batch=1场景</p>
+                </div>
+            `;
+        }
+        
+        // 图表4: 执行时间线图表
+        function generateExecutionChart() {
+            const container = document.getElementById('execution-chart');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; height: 100%; justify-content: space-around;">
+                    <div>
+                        <div style="color: #f87171; font-weight: 600; margin-bottom: 10px;">GPU执行（非确定性）</div>
+                        <div style="display: flex; background: rgba(248, 113, 113, 0.1); border-radius: 8px; padding: 10px;">
+                            ${['Comp', 'Wait', 'Comp', 'DRAM', 'Comp', 'Wait', 'Comp'].map((label, i) => `
+                                <div style="flex: 1; text-align: center; padding: 15px 5px; background: ${i % 2 === 1 ? 'rgba(248, 113, 113, 0.3)' : 'rgba(248, 113, 113, 0.6)'}; 
+                                     margin: 0 2px; border-radius: 4px; color: white; font-weight: 600;">
+                                    ${label}<br><small>${[20, 30, 15, 40, 25, 35, 20][i]}ms</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="text-align: center; color: #94a3b8; margin-top: 5px;">Total: 185ms | Variance: 20-40ms</div>
+                    </div>
+                    
+                    <div>
+                        <div style="color: #4ade80; font-weight: 600; margin-bottom: 10px;">LPU执行（确定性）</div>
+                        <div style="display: flex; background: rgba(74, 222, 128, 0.1); border-radius: 8px; padding: 10px;">
+                            ${Array.from({length: 7}).map(() => `
+                                <div style="flex: 1; text-align: center; padding: 15px 5px; background: rgba(74, 222, 128, 0.6); 
+                                     margin: 0 2px; border-radius: 4px; color: white; font-weight: 600;">
+                                    Comp<br><small>20ms</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="text-align: center; color: #94a3b8; margin-top: 5px;">Total: 140ms | Variance: &lt;1ms</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 图表5: AFD分离架构图表
+        function generateAFDChart() {
+            const container = document.getElementById('afd-chart');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; height: 100%; justify-content: center;">
+                    <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 30px;">
+                        <div style="text-align: center;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6, #60a5fa); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin: 0 auto 10px;">
+                                GPU
+                            </div>
+                            <div style="color: #60a5fa; font-weight: 600;">Attention</div>
+                        </div>
+                        
+                        <div style="text-align: center; position: relative;">
+                            <div style="position: absolute; top: 40px; left: -40px; right: -40px; height: 2px; background: #e8584a; z-index: -1;"></div>
+                            <div style="position: absolute; top: 40px; left: -40px; right: -40px; height: 2px; background: #e8584a; z-index: -1; transform: translateY(60px);"></div>
+                            <div style="width: 60px; height: 60px; background: rgba(232, 88, 74, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #e8584a; font-weight: 600; margin: 0 auto 10px;">
+                                7跳
+                            </div>
+                            <div style="color: #e8584a; font-weight: 600;">通信</div>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #34d399); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin: 0 auto 10px;">
+                                LPU
+                            </div>
+                            <div style="color: #10b981; font-weight: 600;">FFN</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; color: #94a3b8; font-size: 0.9rem;">
+                        <p>每层2次跨机柜通信，每次通信7跳延迟</p>
+                        <p>在400 TPS下，通信可能吃掉40%的耗时</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 图表6: 技术演进路径图表
+        function generateRoadmapChart() {
+            const container = document.getElementById('roadmap-chart');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; height: 100%; justify-content: center;">
+                    <div style="position: relative; height: 200px; margin: 0 20px;">
+                        <!-- 时间线 -->
+                        <div style="position: absolute; top: 100px; left: 0; right: 0; height: 4px; background: linear-gradient(to right, #8b5cf6, #3b82f6, #10b981);"></div>
+                        
+                        <!-- 里程碑 -->
+                        <div style="position: absolute; top: 90px; left: 10%; transform: translateX(-50%); text-align: center;">
+                            <div style="width: 20px; height: 20px; background: #8b5cf6; border-radius: 50%; margin: 0 auto 10px;"></div>
+                            <div style="color: #8b5cf6; font-weight: 600;">2026-2027</div>
+                            <div style="color: #cbd5e1; font-size: 0.9rem;">FEL ASIC化</div>
+                        </div>
+                        
+                        <div style="position: absolute; top: 90px; left: 50%; transform: translateX(-50%); text-align: center;">
+                            <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 50%; margin: 0 auto 10px;"></div>
+                            <div style="color: #3b82f6; font-weight: 600;">2027-2028</div>
+                            <div style="color: #cbd5e1; font-size: 0.9rem;">C2C直连</div>
+                        </div>
+                        
+                        <div style="position: absolute; top: 90px; left: 90%; transform: translateX(-50%); text-align: center;">
+                            <div style="width: 20px; height: 20px; background: #10b981; border-radius: 50%; margin: 0 auto 10px;"></div>
+                            <div style="color: #10b981; font-weight: 600;">2028+</div>
+                            <div style="color: #cbd5e1; font-size: 0.9rem;">统一内存</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 40px; color: #94a3b8;">
+                        <p>从FPGA到ASIC，从以太网到C2C直连，最终实现统一内存架构</p>
+                        <p>逐步解决AFD分离的三大挑战</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSlideCounter();
+            generateChartForSlide(1);
+            
+            // 添加窗口大小变化时的调整
+            window.addEventListener('resize', () => {
+                generateChartForSlide(currentSlide);
+            });
+        });
+    </script>
+</body>
+</html>
