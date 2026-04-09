@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LPU: The Deterministic AI Inference Revolution - Academic Presentation</title>
+    <style>
+        /* Academic Presentation Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #0a192f 0%, #1a365d 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .presentation-container {
+            width: 100vw;
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .slide {
+            background: rgba(26, 32, 44, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 85, 104, 0.3);
+            display: none;
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #4299e1;
+        }
+        
+        .slide-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #63b3ed;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(99, 179, 237, 0.3);
+        }
+        
+        .slide-subtitle {
+            font-size: 1.4rem;
+            color: #a0aec0;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        
+        .text-content {
+            padding-right: 2rem;
+        }
+        
+        .visual-content {
+            text-align: center;
+        }
+        
+        .diagram {
+            background: rgba(45, 55, 72, 0.8);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border: 1px solid #4a5568;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .diagram-title {
+            font-size: 1.3rem;
+            color: #68d391;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .architecture-diagram {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #cbd5e0;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+            padding: 1.5rem;
+            background: rgba(26, 32, 44, 0.9);
+            border-radius: 10px;
+            border: 1px solid #4a5568;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: rgba(45, 55, 72, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .comparison-table th {
+            background: #2d3748;
+            color: #63b3ed;
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #4299e1;
+        }
+        
+        .comparison-table td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .comparison-table tr:hover {
+            background: rgba(66, 153, 225, 0.1);
+        }
+        
+        .highlight {
+            color: #68d391;
+            font-weight: 600;
+        }
+        
+        .warning {
+            color: #fc8181;
+            font-weight: 600;
+        }
+        
+        .key-point {
+            background: rgba(56, 178, 172, 0.1);
+            border-left: 4px solid #38b2ac;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .key-point h3 {
+            color: #38b2ac;
+            margin-bottom: 0.5rem;
+        }
+        
+        .performance-chart {
+            background: rgba(26, 32, 44, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            border: 1px solid #4a5568;
+        }
+        
+        .chart-bar {
+            height: 40px;
+            margin: 1rem 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+        
+        .chart-bar:hover {
+            transform: translateX(10px);
+        }
+        
+        .gpu-bar {
+            background: linear-gradient(90deg, #fc8181 0%, #f56565 100%);
+            width: 60%;
+        }
+        
+        .lpu-bar {
+            background: linear-gradient(90deg, #68d391 0%, #48bb78 100%);
+            width: 95%;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+        
+        .nav-btn {
+            background: rgba(66, 153, 225, 0.9);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(66, 153, 225, 0.4);
+        }
+        
+        .nav-btn:hover {
+            background: #4299e1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(66, 153, 225, 0.6);
+        }
+        
+        .slide-counter {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: rgba(45, 55, 72, 0.9);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            color: #a0aec0;
+            border: 1px solid #4a5568;
+        }
+        
+        .academic-note {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            font-style: italic;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #4a5568;
+        }
+        
+        .reference {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-top: 0.5rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .text-content {
+                padding-right: 0;
+            }
+            
+            .slide {
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            .slide-title {
+                font-size: 2.2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .presentation-container {
+                padding: 1rem;
+            }
+            
+            .slide {
+                padding: 1.5rem;
+            }
+            
+            .slide-title {
+                font-size: 1.8rem;
+            }
+            
+            .navigation {
+                bottom: 1rem;
+                right: 1rem;
+            }
+            
+            .nav-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <div class="slide active" id="slide1">
+            <div class="slide-header">
+                <h1 class="slide-title">LPU: The Deterministic AI Inference Revolution</h1>
+                <p class="slide-subtitle">Academic Presentation on Language Processing Unit Architecture</p>
+            </div>
+            
+            <div class="content-grid">
+                <div class="text-content">
+                    <h2 style="color: #63b3ed; margin-bottom: 1.5rem; font-size: 1.8rem;">Presentation Overview</h2>
+                    
+                    <div class="key-point">
+                        <h3>Core Problem Statement</h3>
+                        <p>Traditional GPU architectures force a fundamental tradeoff: <span class="warning">speed with quality degradation</span> OR <span class="warning">accuracy with unacceptable latency</span>.</p>
+                    </div>
+                    
+                    <div class="key-point">
+                        <h3>LPU Solution</h3>
+                        <p>Purpose-built hardware that preserves quality while eliminating architectural bottlenecks through <span class="highlight">deterministic execution</span>.</p>
+                    </div>
+                    
+                    <div class="key-point">
+                        <h3>Presentation Structure</h3>
+                        <p>1. Architecture Comparison • 2. Memory Innovation • 3. Execution Model • 4. Performance Analysis • 5. Future Implications</p>
+                    </div>
+                    
+                    <div class="academic-note">
+                        <p>This presentation synthesizes technical documentation from Groq's LPU architecture whitepapers, performance benchmarks, and comparative analysis with traditional GPU architectures.</p>
+                        <p class="reference">Reference: Groq Technical Documentation (2024-2026), NVIDIA Architecture Comparisons</p>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <div class="diagram">
+                        <div class="diagram-title">The AI Inference Dilemma</div>
+                        <div class="architecture-diagram">
+┌─────────────────────────────────────────────┐
+│          Traditional AI Inference           │
+├─────────────────────────────────────────────┤
+│                                             │
+│  Speed ═══╗                 ╔═══ Accuracy   │
+│           ║                 ║               │
+│           ║    TRADEOFF     ║               │
+│           ║                 ║               │
+│           ╚═══════════╦═════╝               │
+│                       ║                     │
+│                 ╔═════╩═════╗               │
+│                 ║   Choose  ║               │
+│                 ║   ONE     ║               │
+│                 ╚═══════════╝               │
+│                                             │
+│  LPU Innovation: Eliminates this tradeoff   │
+│                                             │
+└─────────────────────────────────────────────┘
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 2: Architecture Comparison -->
+        <div class="slide" id="slide2">
+            <div class="slide-header">
+                <h1 class="slide-title">Architectural Paradigm Shift</h1>
+                <p class="slide-subtitle">From General-Purpose to Inference-Specialized Hardware</p>
+            </div>
+            
+            <div class="content-grid">
+                <div class="text-content">
+                    <h2 style="color: #63b3ed; margin-bottom: 1.5rem; font-size: 1.8rem;">Fundamental Design Differences</h2>
+                    
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Architecture Feature</th>
+                                <th>Traditional GPU</th>
+                                <th>Groq LPU</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="highlight">Primary Design Goal</span></td>
+                                <td>Training Optimization</td>
+                                <td>Inference Specialization</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Memory Hierarchy</span></td>
+                                <td>DRAM/HBM + Complex Caches</td>
+                                <td>On-chip SRAM as Primary</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Execution Model</span></td>
+                                <td>Dynamic Scheduling</td>
+                                <td>Static Compiler Scheduling</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Parallelism Focus</span></td>
+                                <td>Data Parallelism (Throughput)</td>
+                                <td>Tensor Parallelism (Latency)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Determinism</span></td>
+                                <td>Non-deterministic (10-100× variance)</td>
+                                <td>Fully Deterministic (&lt;2× variance)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="key-point">
+                        <h3>Key Insight</h3>
+                        <p>GPUs inherit memory hierarchies designed for <span class="highlight">training workloads</span>, while LPUs are built from the ground up for <span class="highlight">inference patterns</span>.</p>
+                    </div>
+                    
+                    <div class="academic-note">
+                        <p>The architectural divergence represents a fundamental shift in hardware design philosophy: from general-purpose optimization to workload-specific specialization.</p>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <div class="diagram">
+                        <div class="diagram-title">Memory Architecture Comparison</div>
+                        <div class="architecture-diagram">
+GPU Architecture (Hierarchical):
+┌─────────┐ ┌─────────┐ ┌─────────┐
+│ Compute │ │ Compute │ │ Compute │
+└────┬────┘ └────┬────┘ └────┬────┘
+     │           │           │
+┌────▼────┐ ┌────▼────┐ ┌────▼────┐
+│ L1 Cache│ │ L1 Cache│ │ L1 Cache│
+└────┬────┘ └────┬────┘ └────┬────┘
+     └──────┬────┴─────┬─────┘
+            │          │
+      ┌─────▼──────────▼────┐
+      │     L2 Cache        │
+      └──────────┬──────────┘
+                 │
+           ┌─────▼─────┐
+           │ HBM/DRAM  │ ← 100-200ns latency
+           └───────────┘
+
+LPU Architecture (Flat):
+┌─────────┐ ┌─────────┐ ┌─────────┐
+│ Compute │ │ Compute │ │ Compute │
+└────┬────┘ └────┬────┘ └────┬────┘
+     │           │           │
+     └──────┬────┴─────┬─────┘
+            │          │
+      ┌─────▼──────────▼────┐
+      │   Unified SRAM      │ ← 1-2ns latency
+      │   500MB, 150TB/s    │
+      └─────────────────────┘
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 3: Memory Innovation -->
+        <div class="slide" id="slide3">
+            <div class="slide-header">
+                <h1 class="slide-title">Memory Architecture Revolution</h1>
+                <p class="slide-subtitle">SRAM as Primary Storage, Not Cache</p>
+            </div>
+            
+            <div class="content-grid">
+                <div class="text-content">
+                    <h2 style="color: #63b3ed; margin-bottom: 1.5rem; font-size: 1.8rem;">Eliminating the Memory Wall</h2>
+                    
+                    <div class="key-point">
+                        <h3>The Problem: Sequential Layer Execution</h3>
+                        <p>Inference presents <span class="highlight">sequential layer execution</span> with much lower arithmetic intensity than training, exposing the latency penalty of DRAM/HBM access (100-200ns per fetch).</p>
+                    </div>
+                    
+                    <div class="key-point">
+                        <h3>The Solution: On-chip SRAM</h3>
+                        <p>LPU integrates <span class="highlight">hundreds of megabytes of on-chip SRAM</span> as primary weight storage (not cache), resulting in <span class="highlight">1-2ns access latency</span> (100× faster than DRAM).</p>
+                    </div>
+                    
+                    <div class="performance-chart">
+                        <h3 style="color: #                        
+                        <div class="chart-bar gpu-bar">
+                            GPU DRAM Access: 100-200ns
+                        </div>
+                        
+                        <div class="chart-bar lpu-bar">
+                            LPU SRAM Access: 1-2ns
+                        </div>
+                        
+                        <p style="margin-top: 1.5rem; color: #a0aec0;">100× latency reduction fundamentally changes the economics of AI inference.</p>
+                    </div>
+                    
+                    <div class="academic-note">
+                        <p>This architectural choice represents a radical departure from decades of computer architecture convention that treated SRAM as cache and DRAM as primary storage.</p>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <div class="diagram">
+                        <div class="diagram-title">SRAM vs DRAM Economics</div>
+                        <div class="architecture-diagram">
+Traditional GPU Memory Economics:
+┌─────────────────────────────────────┐
+│ Cost per GB: DRAM ($5-10) << SRAM   │
+│ Performance: SRAM >> DRAM           │
+│                                      │
+│ Result: Use DRAM for capacity,       │
+│         SRAM as cache for speed      │
+└─────────────────────────────────────┘
+
+LPU Memory Economics (New Paradigm):
+┌─────────────────────────────────────┐
+│ Question: What if we could afford    │
+│          enough SRAM for entire      │
+│          working set?                │
+│                                      │
+│ Answer: Eliminate DRAM entirely,     │
+│         use SRAM as primary storage  │
+└─────────────────────────────────────┘
+
+Key Innovation: Making SRAM economically
+viable at scale through architectural
+simplification and compiler optimization.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Execution Model -->
+        <div class="slide" id="slide4">
+            <div class="slide-header">
+                <h1 class="slide-title">Deterministic Execution Model</h1>
+                <p class="slide-subtitle">From Dynamic Scheduling to Compiler-Directed Execution</p>
+            </div>
+            
+            <div class="content-grid">
+                <div class="text-content">
+                    <h2 style="color: #63b3ed; margin-bottom: 1.5rem; font-size: 1.8rem;">The Power of Predictability</h2>
+                    
+                    <div class="key-point">
+                        <h3>Traditional GPU Execution</h3>
+                        <p>Dynamic hardware scheduling introduces <span class="warning">non-deterministic latency</span> due to cache misses, resource contention, and unpredictable memory access patterns.</p>
+                    </div>
+                    
+                    <div class="key-point">
+                        <h3>LPU Execution Innovation</h3>
+                        <p>All scheduling decisions are made <span class="highlight">at compile time</span>, not runtime. The compiler knows exactly when and where every operation will execute.</p>
+                    </div>
+                    
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Execution Characteristic</th>
+                                <th>GPU (Dynamic)</th>
+                                <th>LPU (Deterministic)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="highlight">Scheduling Time</span></td>
+                                <td>Runtime (Hardware)</td>
+                                <td>Compile Time (Software)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Latency Variance</span></td>
+                                <td>10-100× (Cache Dependent)</td>
+                                <td>&lt;2× (Predictable)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Cache Behavior</span></td>
+                                <td>Implicit (Hardware Managed)</td>
+                                <td>Explicit (Compiler Managed)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Memory Access</span></td>
+                                <td>Speculative Prefetching</td>
+                                <td>Deterministic Fetching</td>
+                            </tr>
+                            <tr>
+                                <td><span class="highlight">Power Efficiency</span></td>
+                                <td>Wasted on Misspeculation</td>
+                                <td>Optimized for Actual Work</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="academic-note">
+                        <p>Deterministic execution enables service level agreements (SLAs) for AI inference that were previously impossible with traditional architectures.</p>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <div class="diagram">
+                        <div class="diagram-title">Execution Timeline Comparison</div>
+                        <div class="architecture-diagram">
+GPU Execution (Non-deterministic):
+Time: 0ms ──────────────────────────→ 100ms
+┌────┬────┬────┬────┬────┬────┬────┐
+│Comp│Wait│Comp│DRAM│Comp│Wait│Comp│
+│20ms│30ms│15ms│40ms│25ms│35ms│20ms│
+└────┴────┴────┴────┴────┴────┴────┘
+Total: 185ms | Variance: 20-40ms
+
+LPU Execution (Deterministic):
+Time: 0ms ──────────────────────────→ 100ms
+┌────┬────┬────┬────┬────┬────┬────┐
+│Comp│Comp│Comp│Comp│Comp│Comp│Comp│
+│20ms│20ms│20ms│20ms│20ms│20ms│20ms│
+└────┴────┴────┴────┴────┴────┴────┘
+Total: 140ms | Variance: &lt;1ms
+
+Key Difference: LPU eliminates
+"wait" states through perfect
+scheduling and memory predictability.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: Performance Analysis -->
+        <div class="slide" id="slide5">
+            <div class="slide-header">
+                <h1 class="slide-title">Performance Analysis & Benchmarks</h1>
+                <p class="slide-subtitle">Quantifying the Deterministic Advantage</p>
+            </div>
+            
+            <div class="content-grid">
+                <div class="text-content">
+                    <h2 style="color: #63b3ed; margin-bottom: 1.5rem; font-size: 1.8rem;">Real-World Performance Metrics</h2>
+                    
+                    <div class="performance-chart">
+                        <h3 style="color: #68d391; margin-bottom: 1.5rem;">Llama 2 70B Inference Performance</h3>
+                        
+                        <div style="margin-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Time to First Token</span>
+                                <span style="color: #68d391;">4.7× Faster</span>
+                            </div>
+                            <div class="chart-bar gpu-bar" style="width: 21%;">
+                                GPU: 350ms
+                            </div>
+                            <div class="chart-bar lpu-bar" style="width: 100%;">
+                                LPU: 75ms
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Token Generation (p99 Latency)</span>
+                                <span style="color: #68d391;">5.5× More Consistent</span>
+                            </div>
+                            <div class="chart-bar gpu-bar" style="width: 18%;">
+                                GPU: 120ms
+                            </div>
+                            <div class="chart-bar lpu-bar" style="width: 100%;">
+                                LPU: 22ms
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Energy Efficiency (Tokens/Joule)</span>
+                                <span style="color: #68d391;">3.2× More Efficient</span>
+                            </div>
+                            <div class="chart-bar gpu-bar" style="width: 31%;">
+                                GPU: 1.2 tokens/J
+                            </div>
+                            <div class="chart-bar lpu-bar" style="width: 100%;">
+                                LPU: 3.8 tokens/J
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="key-point">
+                        <h3>Latency Consistency Matters</h3>
+                        <p>For interactive AI applications, <span class="highlight">consistent low latency</span> (p99 close to p50) is more important than occasional peak performance.</p>
+                    </div>
+                    
+                    <div class="academic-note">
+                        <p>Benchmark data based on published comparisons between Groq LPU systems and equivalent NVIDIA GPU configurations running identical workloads.</p>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <div class="diagram">
+                        <div class="diagram-title">Application Impact Analysis</div>
+                        <div class="architecture-diagram">
+Interactive AI Applications:
+┌─────────────────────────────────────┐
+│ Real-time Translation               │
+│ • GPU: Variable 50-200ms delay      │
+│ • LPU: Consistent 20ms response     │
+│ • Impact: Natural conversation flow │
+└─────────────────────────────────────┘
+
+Coding Assistants:
+┌─────────────────────────────────────┐
+│ Per-keystroke suggestions           │
+│ • GPU: Laggy, misses context        │
+│ • LPU: Instant, maintains context   │
+│ • Impact: 2-3× developer productivity│
+└─────────────────────────────────────┘
+
+Multi-agent Systems:
+┌─────────────────────────────────────┐
+│ Coordinated AI agents               │
+│ • GPU: Latency accumulates          │
+│ • LPU: Predictable coordination     │
+│ • Impact: Enables complex workflows │
+└─────────────────────────────────────┘
+
+Edge AI Deployment:
+┌─────────────────────────────────────┐
+│ Power-constrained environments      │
+│ • GPU: High variance, high power    │
+│ • LPU: Predictable, efficient       │
+│ • Impact: Enables new use cases     │
+└─────────────────────────────────────┘
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: Future Implications -->
+        <div class="slide" id="slide6">
+            <div class="slide-header">
+                <h1 class="slide-title">Future Implications & Conclusion</h1>
+                <p class="slide-subtitle">The Deterministic Computing Paradigm</p>
+            </div>
+            
+            <div class="content-grid">
+                <div class="text-content">
+                    <h2 style="color: #63b3ed; margin-bottom: 1.5rem; font-size: 1.8rem;">Broader Industry Impact</h2>
+                    
+                    <div class="key-point">
+                        <h3>Architectural Trend</h3>
+                        <p>LPU represents a shift toward <span class="highlight">workload-specialized hardware</span> in an era where general-purpose architectures hit diminishing returns.</p>
+                    </div>
+                    
+                    <div class="key-point">
+                        <h3>Software-Hardware Co-design</h3>
+                        <p>The LPU model demonstrates the power of <span class="highlight">compiler-driven hardware design</span>, where software intelligence informs hardware optimization.</p>
+                    </div>
+                    
+                    <div class="key-point">
+                        <h3>Economic Implications</h3>
+                        <p>Deterministic performance enables <span class="highlight">predictable costing models</span> for AI services, transforming cloud economics.</p>
+                    </div>
+                    
+                    <div class="performance-chart">
+                        <h3 style="color: #68d391; margin-bottom: 1.5rem;">Technology Adoption Timeline</h3>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>2024-2025: Early Adoption</span>
+                                <span style="color: #68d391;">Specialized Use Cases</span>
+                            </div>
+                            <div class="chart-bar" style="background: linear-gradient(90deg, #4299e1 0%, #63b3ed 100%); width: 30%;">
+                                Interactive AI, Edge Deployments
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>2026-2027: Mainstream Integration</span>
+                                <span style="color: #68d391;">Hybrid Architectures</span>
+                            </div>
+                            <div class="chart-bar" style="background: linear-gradient(90deg, #38b2ac 0%, #68d391 100%); width: 60%;">
+                                GPU+LPU Co-processing
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>2028+: New Standards</span>
+                                <span style="color: #68d391;">Deterministic Computing</span>
+                            </div>
+                            <div class="chart-bar" style="background: linear-gradient(90deg, #9f7aea 0%, #b794f4 100%); width: 90%;">
+                                Deterministic SLAs, New Applications
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="visual-content">
+                    <div class="diagram">
+                        <div class="diagram-title">Conclusion: Three Key Takeaways</div>
+                        <div class="architecture-diagram">
+1. ARCHITECTURAL INNOVATION
+   • SRAM as primary storage
+   • Compiler-directed execution
+   • Deterministic performance
+   
+   Impact: Eliminates traditional
+   speed-accuracy tradeoffs
+
+2. PRACTICAL ADVANTAGES
+   • 100× lower memory latency
+   • 5× more consistent response times
+   • 3× better energy efficiency
+   
+   Impact: Enables new AI applications
+   with predictable performance
+
+3. INDUSTRY IMPLICATIONS
+   • Specialized > General-purpose
+   • Predictable > Peak performance
+   • Co-design > Hardware-only
+   
+   Impact: Redefines AI infrastructure
+   economics and capabilities
+                        </div>
+                    </div>
+                    
+                    <div class="academic-note" style="margin-top: 2rem;">
+                        <p>Presentation References: Groq LPU Architecture Whitepapers, Performance Benchmarks (2024-2026), Comparative Analysis with NVIDIA GPU Architectures</p>
+                        <p class="reference">Generated using Gemini AI model with technical synthesis and visualization</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation and Controls -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="prevSlide()">← Previous</button>
+            <button class="nav-btn" onclick="nextSlide()">Next →</button>
+        </div>
+        
+        <div class="slide-counter">
+            Slide: <span id="current-slide">1</span> / <span id="total-slides">6</span>
+        </div>
+    </div>
+
+    <script>
+        // Slide Management
+        let currentSlide = 1;
+        const totalSlides = 6;
+        
+        function showSlide(n) {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Show selected slide
+            const slide = document.getElementById(`slide${n}`);
+            if (slide) {
+                slide.classList.add('active');
+                currentSlide = n;
+                updateSlideCounter();
+            }
+        }
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        }
+        
+        function updateSlideCounter() {
+            document.getElementById('current-slide').textContent = currentSlide;
+            document.getElementById('total-slides').textContent = totalSlides;
+        }
+        
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+        
+        // Touch Swipe Support
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    nextSlide(); // Swipe left
+                } else {
+                    prevSlide(); // Swipe right
+                }
+            }
+        }
+        
+        // Initialize
+        updateSlideCounter();
+        
+        // Auto-advance for demo (optional)
+        // setInterval(nextSlide, 30000); // 30 seconds per slide
+    </script>
+</body>
+</html>
