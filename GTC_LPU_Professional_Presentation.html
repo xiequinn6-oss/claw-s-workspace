@@ -420,7 +420,7 @@
         }
         
         .author-badge {
-            position: fixed;
+            position: absolute;
             top: 20px;
             right: 20px;
             background: rgba(30, 41, 59, 0.95);
@@ -539,11 +539,12 @@
 </head>
 <body>
     <div class="presentation-container">
-        <div class="author-badge">作者：nabla</div>
+        
         <div class="keyboard-hint">使用 ← → 箭头键或空格键翻页</div>
         
         <!-- Slide 1: 标题页 -->
         <div class="slide active" id="slide1">
+            <div class="author-badge">作者：nabla</div>
             <div class="slide-content">
                 <div class="slide-header">
                     <h1 class="slide-title">GTC 2026深度解析</h1>
@@ -740,18 +741,120 @@
                                     <div class="dual-image-container">
                                         <div class="image-box">
                                             <div class="image-box-title">GPU架构</div>
-                                            <img src="https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                                                 alt="GPU芯片架构示意图" class="chart-image">
+                                            <svg width="100%" height="100%" viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#3498db" />
+                                </marker>
+                                <marker id="arrow-dash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#7f8c8d" />
+                                </marker>
+                            </defs>
+
+                            <!-- Components -->
+                            <!-- DRAM / HBM -->
+                            <rect x="50" y="50" width="120" height="300" rx="8" fill="#1e3a5f" stroke="#3498db" stroke-width="2"/>
+                            <text x="110" y="80" text-anchor="middle" font-weight="bold" fill="#3498db" font-size="16">Off-chip DRAM</text>
+                            
+                            <rect x="220" y="80" width="100" height="240" rx="8" fill="#2c3e50" stroke="#3498db" stroke-width="2"/>
+                            <text x="270" y="110" text-anchor="middle" font-weight="bold" fill="#3498db" font-size="16">HBM</text>
+                            <text x="270" y="140" text-anchor="middle" fill="#ecf0f1" font-size="12">High Bandwidth</text>
+                            <text x="270" y="155" text-anchor="middle" fill="#ecf0f1" font-size="12">Memory</text>
+
+                            <!-- L2 Cache -->
+                            <rect x="380" y="100" width="80" height="200" rx="8" fill="#34495e" stroke="#3498db" stroke-width="2"/>
+                            <text x="420" y="130" text-anchor="middle" font-weight="bold" fill="#ecf0f1" font-size="16">L2 Cache</text>
+                            
+                            <!-- Hardware Scheduler -->
+                            <rect x="520" y="50" width="400" height="40" rx="4" fill="#2c3e50" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="720" y="75" text-anchor="middle" font-weight="bold" fill="#bdc3c7" font-size="14">Hardware Thread Scheduler & Coherence Protocols</text>
+
+                            <!-- SM Block -->
+                            <rect x="520" y="110" width="400" height="240" rx="8" fill="#1a5276" stroke="#3498db" stroke-width="2"/>
+                            <text x="720" y="135" text-anchor="middle" font-weight="bold" fill="#ecf0f1" font-size="18">Streaming Multiprocessor (SM)</text>
+
+                            <!-- L1 Cache / Shared Memory -->
+                            <rect x="540" y="160" width="100" height="160" rx="8" fill="#2980b9" stroke="#154360" stroke-width="2"/>
+                            <text x="590" y="210" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">L1 Cache /</text>
+                            <text x="590" y="230" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Shared Mem</text>
+
+                            <!-- Tensor Cores -->
+                            <rect x="700" y="160" width="200" height="160" rx="8" fill="#1f618d" stroke="#154360" stroke-width="2"/>
+                            <text x="800" y="240" text-anchor="middle" font-weight="bold" fill="#fff" font-size="18">Tensor Cores</text>
+                            <text x="800" y="260" text-anchor="middle" fill="#d4e6f1" font-size="12">Matrix Multiply</text>
+
+                            <!-- Data Flow Arrows -->
+                            <path d="M 170 200 L 210 200" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <path d="M 320 200 L 370 200" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <path d="M 460 200 L 530 200" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <path d="M 640 240 L 690 240" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            
+                            <!-- Complex feedback/miss arrows -->
+                            <path d="M 590 160 C 590 100, 420 100, 420 100" stroke="#e74c3c" stroke-width="2" stroke-dasharray="5" fill="none" marker-end="url(#arrow-dash)"/>
+                            <text x="500" y="115" text-anchor="middle" fill="#e74c3c" font-size="12">Cache Miss / Eviction</text>
+
+                            <path d="M 900 240 L 950 240" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <text x="960" y="245" fill="#3498db" font-weight="bold">Result</text>
+                        </svg>
                                             <div class="image-caption" style="margin-top: 5px;">
-                                                典型GPU芯片布局：计算单元、缓存层次、控制逻辑等混合分布
+                                                GPU架构：复杂的多级缓存，硬件动态调度，延迟不确定。
                                             </div>
                                         </div>
                                         <div class="image-box">
                                             <div class="image-box-title">LP30芯片布局</div>
-                                            <img src="https://mmbiz.qpic.cn/sz_mmbiz_png/kEFHVffKibqOyRicOAmMentPWk4kvW16sj5tzwVGcictKLUWQhTRBygM8ApOWbPksubXrL2BmicwrNt2B2SqNnYj2IbqzoEzRjtsmwMIf74B614/640?wx_fmt=png&from=appmsg" 
-                                                 alt="LP30芯片布局图" class="chart-image">
+                                            <svg width="100%" height="100%" viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#f39c12" />
+                                </marker>
+                            </defs>
+
+                            <!-- Software Compiler Control -->
+                            <rect x="50" y="30" width="900" height="40" rx="4" fill="#2c3e50" stroke="#f39c12" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="500" y="55" text-anchor="middle" font-weight="bold" fill="#f39c12" font-size="16">Groq Compiler: 100% Pre-Scheduled Deterministic Instruction Control</text>
+
+                            <!-- Components arranged horizontally for linear flow -->
+                            
+                            <!-- Global SRAM -->
+                            <rect x="50" y="100" width="150" height="250" rx="8" fill="#7d3c98" stroke="#f39c12" stroke-width="2"/>
+                            <text x="125" y="140" text-anchor="middle" font-weight="bold" fill="#f39c12" font-size="18">Global SRAM</text>
+                            <text x="125" y="165" text-anchor="middle" fill="#d7bde2" font-size="12">Single Huge</text>
+                            <text x="125" y="180" text-anchor="middle" fill="#d7bde2" font-size="12">Memory Space</text>
+                            <text x="125" y="220" text-anchor="middle" font-weight="bold" fill="#e74c3c" font-size="14">NO Caches!</text>
+
+                            <!-- Switch / Router -->
+                            <rect x="250" y="100" width="60" height="250" rx="8" fill="#6c3483" stroke="#f39c12" stroke-width="2"/>
+                            <text x="280" y="225" text-anchor="middle" font-weight="bold" fill="#d7bde2" font-size="14" transform="rotate(-90 280 225)">Data Router</text>
+
+                            <!-- Functional Slices -->
+                            <!-- VXM (Vector) -->
+                            <rect x="360" y="120" width="120" height="210" rx="8" fill="#f39c12" stroke="#a04000" stroke-width="2"/>
+                            <text x="420" y="160" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Vector Unit</text>
+                            <text x="420" y="180" text-anchor="middle" fill="#fdf2e9" font-size="12">(VXM)</text>
+
+                            <!-- MXM (Matrix) -->
+                            <rect x="530" y="120" width="120" height="210" rx="8" fill="#e67e22" stroke="#a04000" stroke-width="2"/>
+                            <text x="590" y="160" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Matrix Unit</text>
+                            <text x="590" y="180" text-anchor="middle" fill="#fdf2e9" font-size="12">(MXM)</text>
+
+                            <!-- SXM (Switch) / ALU -->
+                            <rect x="700" y="120" width="120" height="210" rx="8" fill="#d35400" stroke="#a04000" stroke-width="2"/>
+                            <text x="760" y="160" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Data Switch</text>
+                            <text x="760" y="180" text-anchor="middle" fill="#fdf2e9" font-size="12">(SXM)</text>
+
+                            <!-- Result Storage -->
+                            <rect x="870" y="100" width="80" height="250" rx="8" fill="#7d3c98" stroke="#f39c12" stroke-width="2"/>
+                            <text x="910" y="225" text-anchor="middle" font-weight="bold" fill="#f39c12" font-size="14" transform="rotate(-90 910 225)">SRAM Store</text>
+
+                            <!-- Continuous Linear Data Flow Arrows -->
+                            <path d="M 200 225 L 240 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 310 225 L 350 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 480 225 L 520 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 650 225 L 690 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 820 225 L 860 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                        </svg>
                                             <div class="image-caption" style="margin-top: 5px;">
-                                                LP30 Die Layout：大量面积被SRAM占据，计算单元（MXM）面积极小。省去GPU的调度单元面积，全部换成了SRAM。（Source: NVIDIA）
+                                                LPU架构：无缓存，编译器100%静态调度，数据流完全确定。
                                             </div>
                                         </div>
                                     </div>
