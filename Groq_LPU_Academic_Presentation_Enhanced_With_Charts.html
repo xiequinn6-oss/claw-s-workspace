@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groq LPU: Academic Technical Presentation (Enhanced)</title>
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #0a0a0a;
+            color: #f0f0f0;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 4rem;
+            display: none;
+            overflow-y: auto;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .slide-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            color: #f05022;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #f05022;
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            font-size: 2.8rem;
+            color: #f05022;
+            margin: 2rem 0 1rem;
+        }
+        
+        h3 {
+            font-size: 2.2rem;
+            color: #ddd;
+            margin: 1.5rem 0 1rem;
+        }
+        
+        h4 {
+            font-size: 1.8rem;
+            color: #bbb;
+            margin: 1rem 0;
+        }
+        
+        p {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            margin: 1rem 0;
+        }
+        
+        ul, ol {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            margin: 1rem 0 2rem 2rem;
+        }
+        
+        li {
+            margin: 0.8rem 0;
+        }
+        
+        .citation {
+            font-size: 1.1rem;
+            color: #888;
+            font-style: italic;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #333;
+        }
+        
+        .technical-diagram {
+            background: #2a2a2a;
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            border: 1px solid #333;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            font-size: 1.3rem;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #444;
+            padding: 1rem;
+            text-align: left;
+        }
+        
+        .comparison-table th {
+            background: #333;
+            color: #f05022;
+            font-weight: bold;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #222;
+        }
+        
+        .highlight {
+            color: #f05022;
+            font-weight: bold;
+        }
+        
+        .slide-nav {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+        
+        .slide-nav button {
+            background: #333;
+            color: #f0f0f0;
+            border: 1px solid #555;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .slide-nav button:hover {
+            background: #444;
+        }
+        
+        .slide-nav button:active {
+            transform: scale(0.95);
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1001;
+        }
+        
+        #progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: #f05022;
+            transition: width 0.3s;
+            width: 0%;
+        }
+        
+        .slide-counter {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            color: #888;
+            font-size: 1.1rem;
+        }
+        
+        /* GPU vs LPU对比图专用样式 */
+        .architecture-comparison {
+            margin: 2rem 0;
+        }
+        
+        .architecture-diagram-container {
+            width: 100%;
+            height: 400px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 1px solid #333;
+        }
+        
+        .architecture-summary {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .summary-point {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        
+        .gpu-summary {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid #3498db;
+        }
+        
+        .lpu-summary {
+            background: rgba(243, 156, 18, 0.1);
+            border-left: 4px solid #f39c12;
+        }
+        
+        .summary-point h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.3rem;
+        }
+        
+        .gpu-summary h4 {
+            color: #3498db;
+        }
+        
+        .lpu-summary h4 {
+            color: #f39c12;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            h3 {
+                font-size: 1.8rem;
+            }
+            
+            p, li {
+                font-size: 1.2rem;
+            }
+            
+            .slide-nav button {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .slide-counter {
+                bottom: 1rem;
+                left: 1rem;
+                font-size: 1rem;
+            }
+            
+            .architecture-diagram-container {
+                height: 300px;
+            }
+            
+            .architecture-summary {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .slide-content {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            h3 {
+                font-size: 1.5rem;
+            }
+            
+            p, li {
+                font-size: 1.1rem;
+            }
+            
+            .comparison-table {
+                font-size: 1rem;
+            }
+            
+            .comparison-table th, .comparison-table td {
+                padding: 0.5rem;
+            }
+            
+            .architecture-diagram-container {
+                height: 250px;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div id="progress"></div>
+    </div>
+    
+    <div id="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active" id="slide1">
+            <div class="slide-content">
+                <h1>Groq LPU: Technical Architecture Analysis</h1>
+                <h3>Based on ISCA 2020 & 2022 Papers</h3>
+                <p>Academic Technical Presentation (Enhanced with Architecture Comparison)</p>
+                <div class="citation">
+                    References: Abts et al., "Think Fast: A Tensor Streaming Processor (TSP) for Accelerating Deep Learning Workloads", ISCA 2020
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 2: Outline -->
+        <div class="slide" id="slide2">
+            <div class="slide-content">
+                <h2>Presentation Outline</h2>
+                <ol>
+                    <li>Introduction: The Memory Wall Problem</li>
+                    <li>Architecture Comparison: GPU vs LPU</li>
+                    <li>TSP Microarchitecture: Spatial VLIW Design</li>
+                    <li>Deterministic Execution Model</li>
+                    <li>Compiler-Driven Data Routing</li>
+                    <li>Multi-Node Scaling (ISCA 2022)</li>
+                    <li>Performance Evaluation</li>
+                    <li>Commercial Implications</li>
+                    <li>Conclusion & Future Work</li>
+                </ol>
+                <p class="highlight">New: Added GPU vs LPU architecture comparison for visual understanding</p>
+            </div>
+        </div>
+        
+        <!-- Slide 3: Memory Wall -->
+        <div class="slide" id="slide3">
+            <div class="slide-content">
+                <h2>1. The Memory Wall Problem</h2>
+                <h3>Shifting Bottleneck in AI Inference</h3>
+                
+                <div class="technical-diagram">
+                    <h4>Traditional von Neumann Architecture</h4>
+                    <p>Compute ← Memory bottleneck in LLM inference</p>
+                    <ul>
+                        <li>Memory bandwidth limits token generation</li>
+                        <li>HBM access latency: 100-200ns</li>
+                        <li>Energy cost: ~200pJ/bit for DRAM access</li>
+                    </ul>
+                </div>
+                
+                <div class="citation">
+                    ISCA 2020: "Deep learning workloads are increasingly memory-bound"
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW SLIDE 4: GPU Architecture -->
+        <div class="slide" id="slide4">
+            <div class="slide-content">
+                <h2>2.1 GPU Architecture: Complex Data Scheduling</h2>
+                <h3>Hierarchical Memory & Non-deterministic Execution (e.g., A100/H100)</h3>
+                
+                <div class="architecture-comparison">
+                    <div class="architecture-diagram-container">
+                        <svg width="100%" height="100%" viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#3498db" />
+                                </marker>
+                                <marker id="arrow-dash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#7f8c8d" />
+                                </marker>
+                            </defs>
+
+                            <!-- Components -->
+                            <!-- DRAM / HBM -->
+                            <rect x="50" y="50" width="120" height="300" rx="8" fill="#1e3a5f" stroke="#3498db" stroke-width="2"/>
+                            <text x="110" y="80" text-anchor="middle" font-weight="bold" fill="#3498db" font-size="16">Off-chip DRAM</text>
+                            
+                            <rect x="220" y="80" width="100" height="240" rx="8" fill="#2c3e50" stroke="#3498db" stroke-width="2"/>
+                            <text x="270" y="110" text-anchor="middle" font-weight="bold" fill="#3498db" font-size="16">HBM</text>
+                            <text x="270" y="140" text-anchor="middle" fill="#ecf0f1" font-size="12">High Bandwidth</text>
+                            <text x="270" y="155" text-anchor="middle" fill="#ecf0f1" font-size="12">Memory</text>
+
+                            <!-- L2 Cache -->
+                            <rect x="380" y="100" width="80" height="200" rx="8" fill="#34495e" stroke="#3498db" stroke-width="2"/>
+                            <text x="420" y="130" text-anchor="middle" font-weight="bold" fill="#ecf0f1" font-size="16">L2 Cache</text>
+                            
+                            <!-- Hardware Scheduler -->
+                            <rect x="520" y="50" width="400" height="40" rx="4" fill="#2c3e50" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="720" y="75" text-anchor="middle" font-weight="bold" fill="#bdc3c7" font-size="14">Hardware Thread Scheduler & Coherence Protocols</text>
+
+                            <!-- SM Block -->
+                            <rect x="520" y="110" width="400" height="240" rx="8" fill="#1a5276" stroke="#3498db" stroke-width="2"/>
+                            <text x="720" y="135" text-anchor="middle" font-weight="bold" fill="#ecf0f1" font-size="18">Streaming Multiprocessor (SM)</text>
+
+                            <!-- L1 Cache / Shared Memory -->
+                            <rect x="540" y="160" width="100" height="160" rx="8" fill="#2980b9" stroke="#154360" stroke-width="2"/>
+                            <text x="590" y="210" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">L1 Cache /</text>
+                            <text x="590" y="230" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Shared Mem</text>
+
+                            <!-- Tensor Cores -->
+                            <rect x="700" y="160" width="200" height="160" rx="8" fill="#1f618d" stroke="#154360" stroke-width="2"/>
+                            <text x="800" y="240" text-anchor="middle" font-weight="bold" fill="#fff" font-size="18">Tensor Cores</text>
+                            <text x="800" y="260" text-anchor="middle" fill="#d4e6f1" font-size="12">Matrix Multiply</text>
+
+                            <!-- Data Flow Arrows -->
+                            <path d="M 170 200 L 210 200" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <path d="M 320 200 L 370 200" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <path d="M 460 200 L 530 200" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <path d="M 640 240 L 690 240" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            
+                            <!-- Complex feedback/miss arrows -->
+                            <path d="M 590 160 C 590 100, 420 100, 420 100" stroke="#e74c3c" stroke-width="2" stroke-dasharray="5" fill="none" marker-end="url(#arrow-dash)"/>
+                            <text x="500" y="115" text-anchor="middle" fill="#e74c3c" font-size="12">Cache Miss / Eviction</text>
+
+                            <path d="M 900 240 L 950 240" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrow-blue)"/>
+                            <text x="960" y="245" fill="#3498db" font-weight="bold">Result</text>
+                        </svg>
+                    </div>
+                    
+                    <div class="architecture-summary">
+                        <div class="summary-point gpu-summary">
+                            <h4>Complex Memory Hierarchy</h4>
+                            <p>Data must travel through multiple unpredictable layers (HBM → L2 → L1) before reaching computation units, causing latency variations.</p>
+                        </div>
+                        <div class="summary-point gpu-summary">
+                            <h4>Non-Deterministic Scheduling</h4>
+                            <p>Hardware schedulers dynamically allocate threads. Cache hits/misses create unpredictable execution times (jitter) during LLM token generation.</p>
+                        </div>
+                        <div class="summary-point gpu-summary">
+                            <h4>Coherence Overhead</h4>
+                            <p>Maintaining data consistency across massive parallel cores requires complex coherence protocols, burning power and cycles.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="highlight">Key Insight: GPU's complexity creates non-deterministic latency, unsuitable for real-time LLM inference.</p>
+            </div>
+        </div>
+        
+        <!-- NEW SLIDE 5: LPU Architecture -->
+        <div class="slide" id="slide5">
+            <div class="slide-content">
+                <h2>2.2 LPU Architecture: Deterministic Data Flow</h2>
+                <h3>SRAM & Compiler-driven Linear Execution (Groq TSP)</h3>
+                
+                <div class="architecture-comparison">
+                    <div class="architecture-diagram-container">
+                        <svg width="100%" height="100%" viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#f39c12" />
+                                </marker>
+                            </defs>
+
+                            <!-- Software Compiler Control -->
+                            <rect x="50" y="30" width="900" height="40" rx="4" fill="#2c3e50" stroke="#f39c12" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="500" y="55" text-anchor="middle" font-weight="bold" fill="#f39c12" font-size="16">Groq Compiler: 100% Pre-Scheduled Deterministic Instruction Control</text>
+
+                            <!-- Components arranged horizontally for linear flow -->
+                            
+                            <!-- Global SRAM -->
+                            <rect x="50" y="100" width="150" height="250" rx="8" fill="#7d3c98" stroke="#f39c12" stroke-width="2"/>
+                            <text x="125" y="140" text-anchor="middle" font-weight="bold" fill="#f39c12" font-size="18">Global SRAM</text>
+                            <text x="125" y="165" text-anchor="middle" fill="#d7bde2" font-size="12">Single Huge</text>
+                            <text x="125" y="180" text-anchor="middle" fill="#d7bde2" font-size="12">Memory Space</text>
+                            <text x="125" y="220" text-anchor="middle" font-weight="bold" fill="#e74c3c" font-size="14">NO Caches!</text>
+
+                            <!-- Switch / Router -->
+                            <rect x="250" y="100" width="60" height="250" rx="8" fill="#6c3483" stroke="#f39c12" stroke-width="2"/>
+                            <text x="280" y="225" text-anchor="middle" font-weight="bold" fill="#d7bde2" font-size="14" transform="rotate(-90 280 225)">Data Router</text>
+
+                            <!-- Functional Slices -->
+                            <!-- VXM (Vector) -->
+                            <rect x="360" y="120" width="120" height="210" rx="8" fill="#f39c12" stroke="#a04000" stroke-width="2"/>
+                            <text x="420" y="160" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Vector Unit</text>
+                            <text x="420" y="180" text-anchor="middle" fill="#fdf2e9" font-size="12">(VXM)</text>
+
+                            <!-- MXM (Matrix) -->
+                            <rect x="530" y="120" width="120" height="210" rx="8" fill="#e67e22" stroke="#a04000" stroke-width="2"/>
+                            <text x="590" y="160" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Matrix Unit</text>
+                            <text x="590" y="180" text-anchor="middle" fill="#fdf2e9" font-size="12">(MXM)</text>
+
+                            <!-- SXM (Switch) / ALU -->
+                            <rect x="700" y="120" width="120" height="210" rx="8" fill="#d35400" stroke="#a04000" stroke-width="2"/>
+                            <text x="760" y="160" text-anchor="middle" font-weight="bold" fill="#fff" font-size="16">Data Switch</text>
+                            <text x="760" y="180" text-anchor="middle" fill="#fdf2e9" font-size="12">(SXM)</text>
+
+                            <!-- Result Storage -->
+                            <rect x="870" y="100" width="80" height="250" rx="8" fill="#7d3c98" stroke="#f39c12" stroke-width="2"/>
+                            <text x="910" y="225" text-anchor="middle" font-weight="bold" fill="#f39c12" font-size="14" transform="rotate(-90 910 225)">SRAM Store</text>
+
+                            <!-- Continuous Linear Data Flow Arrows -->
+                            <path d="M 200 225 L 240 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 310 225 L 350 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 480 225 L 520 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 650 225 L 690 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            <path d="M 820 225 L 860 225" stroke="#f39c12" stroke-width="4" fill="none" marker-end="url(#arrow-orange)"/>
+                            
+                            <text x="550" y="370" text-anchor="middle" font-weight="bold" fill="#f39c12" font-size="16">Straight-line execution. Data flows predictably without hardware interruptions.</text>
+                        </svg>
+                    </div>
+                    
+                    <div class="architecture-summary">
+                        <div class="summary-point lpu-summary">
+                            <h4>No Caches, Only SRAM</h4>
+                            <p>Eliminates complex memory hierarchies. Massive on-chip SRAM provides immense bandwidth without cache-miss latency penalties.</p>
+                        </div>
+                        <div class="summary-point lpu-summary">
+                            <h4>Software-Defined Determinism</h4>
+                            <p>Hardware thread schedulers are removed. The compiler precisely orchestrates when every byte moves and computes, guaranteeing exact execution time.</p>
+                        </div>
+                        <div class="summary-point lpu-summary">
+                            <h4>Linear Data Flow</h4>
+                            <p>Data moves in a straight line through functional units. No arbitration, no contention, no unpredictable stalls.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="highlight">Key Insight: LPU's simplicity enables deterministic latency, perfect for real-time LLM inference.</p>
+            </div>
+        </div>
+        
+        <!-- Slide 6: Memory Comparison (原Slide 4) -->
+        <div class="slide" id="slide6">
+            <div class="slide-content">
+                <h3>Memory Hierarchy Comparison</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Memory Type</th>
+                        <th>Bandwidth</th>
+                        <th>Latency</th>
+                        <th>Energy/bit</th>
+                    </tr>
+                    <tr>
+                        <td>GPU HBM</td>
+                        <td>3-5 TB/s</td>
+                        <td>100-200ns</td>
+                        <td>200pJ</td>
+                    </tr>
+                    <tr>
+                        <td>TSP SRAM</td>
+                        <td>80 TB/s</td>
+                        <td>1-2ns</td>
+                        <td>5pJ</td>
+                    </tr>
+                </table>
+                
+                <p><span class="highlight">Key Insight:</span> 16× bandwidth, 100× lower latency, 40× energy efficiency</p>
+            </div>
+        </div>
+        
+        <!-- Slide 7: TSP Microarchitecture (原Slide 5) -->
+        <div class="slide" id="slide7">
+            <div class="slide-content">
+                <h2>3. TSP Microarchitecture</h2>
+                <h3>Spatial VLIW Design</h3>
+                
+                <div class="technical-diagram">
+                    <h4>Architectural Innovation</h4>
+                    <ul>
+                        <li><span class="highlight">Functional Slicing:</span> Dedicated compute units per function</li>
+                        <li><span class="highlight">Spatial Arrangement:</span> Data flows through physical pipeline</li>
+                        <li><span class="highlight">No Caches:</span> Eliminates non-deterministic behavior</li>
+                        <li><span class="highlight">Streaming Register File:</span> Chip-wide operand transport</li>
+                    </ul>
+                </div>
+                
+                <div class="citation">
+                    ISCA 2020: "TSP reorganizes conventional 2D mesh into functionally sliced microarchitecture"
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 8: TSP Layout (原Slide 6) -->
+        <div class="slide" id="slide8">
+            <div class="slide-content">
+                <h3>TSP Chip Layout</h3>
+                <div class="technical-diagram">
+                    <div style="text-align: center; font-family: monospace; background: #1a1a1a; padding: 2rem; border-radius: 4px;">
+                        <div style="border: 2px solid #f05022; padding: 1rem; margin-bottom: 1rem;">
+                            <strong>Compiler Schedule</strong><br>
+                            Precise instruction scheduling & data flow orchestration
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 1rem 0;">
+                            <div style="flex: 1; border: 1px solid #4a90e2; padding: 1rem; margin: 0 0.5rem;">
+                                <strong>SRAM (230MB)</strong><br>
+                                80 TB/s Bandwidth
+                            </div>
+                            <div style="flex: 1; border: 1px solid #50c878; padding: 1rem; margin: 0 0.5rem;">
+                                <strong>Vector Units</strong><br>
+                                Deterministic Execution
+                            </div>
+                            <div style="flex: 1; border: 1px solid #ff6b6b; padding: 1rem; margin: 0 0.5rem;">
+                                <strong>Functional Slices</strong><br>
+                                Specialized Compute Units
+                            </div>
+                        </div>
+                        <div style="border: 2px solid #888; padding: 1rem; margin-top: 1rem;">
+                            <strong>Plesiosynchronous Network</strong><br>
+                            Multi-Chip Scaling
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 9: Deterministic Execution (原Slide 7) -->
+        <div class="slide" id="slide9">
+            <div class="slide-content">
+                <h2>4. Deterministic Execution Model</h2>
+                <h3>Eliminating Non-Determinism</h3>
+                
+                <div class="technical-diagram">
+                    <h4>Traditional GPU vs TSP</h4>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Component</th>
+                            <th>GPU</th>
+                            <th>TSP</th>
+                        </tr>
+                        <tr>
+                            <td>Scheduling</td>
+                            <td>Hardware dynamic</td>
+                            <td>Compiler static</td>
+                        </tr>
+                        <tr>
+                            <td>Memory</td>
+                            <td>Cache hierarchy</td>
+                            <td>SRAM only</td>
+                        </tr>
+                        <tr>
+                            <td>Network</td>
+                            <td>Packet-switched</td>
+                            <td>Time-division</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 10: Determinism Benefits (原Slide 8) -->
+        <div class="slide" id="slide10">
+            <div class="slide-content">
+                <h3>Determinism Benefits</h3>
+                <ul>
+                    <li><span class="highlight">Predictable Latency:</span> No cache misses or contention</li>
+                    <li><span class="highlight">Linear Scaling:</span> Multi-chip behaves as single core</li>
+                    <li><span class="highlight">Debugging:</span> Reproducible execution traces</li>
+                    <li><span class="highlight">Quality of Service:</span> Guaranteed performance SLAs</li>
+                </ul>
+                
+                <div class="citation">
+                    ISCA 2020: "Determinism enables precise performance prediction and scaling"
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11: Compiler-Driven Routing (原Slide 9) -->
+        <div class="slide" id="slide11">
+            <div class="slide-content">
+                <h2>5. Compiler-Driven Data Routing</h2>
+                <h3>Software-Defined Architecture</h3>
+                
+                <div class="technical-diagram">
+                    <h4>Compiler Responsibilities</h4>
+                    <ol>
+                        <li><span class="highlight">Instruction Scheduling:</span> Every cycle planned at compile time</li>
+                        <li><span class="highlight">Data Movement:</span> Exact routing through chip</li>
+                        <li><span class="highlight">Resource Allocation:</span> Functional unit assignment</li>
+                        <li><span class="highlight">Network Timing:</span> Multi-chip synchronization</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 12: Compiler Challenges (原Slide 10) -->
+        <div class="slide" id="slide12">
+            <div class="slide-content">
+                <h3>Compiler Optimization Challenges</h3>
+                <ul>
+                    <li><span class="highlight">Complexity:</span> NP-hard scheduling problem</li>
+                    <li><span class="highlight">Compile Time:</span> Hours for large models</li>
+                    <li><span class="highlight">Model Specific:</span> Recompile for each model</li>
+                    <li><span class="highlight">Toolchain Maturity:</span> Early stage ecosystem</li>
+                </ul>
+                
+                <p><span class="highlight">Trade-off:</span> Runtime simplicity for compile-time complexity</p>
+            </div>
+        </div>
+        
+        <!-- Slide 13: Multi-Node Scaling (原Slide 11) -->
+        <div class="slide" id="slide13">
+            <div class="slide-content">
+                <h2>6. Multi-Node Scaling (ISCA 2022)</h2>
+                <h3>Software-Defined Networks</h3>
+                
+                <div class="technical-diagram">
+                    <h4>Plesiosynchronous Protocol</h4>
+                    <ul>
+                        <li><span class="highlight">Clock Synchronization:</span> Cancel natural drift</li>
+                        <li><span class="highlight">Deterministic Network:</span> Time-division multiplexing</li>
+                        <li><span class="highlight">Single Logical Core:</span> 1000+ chips as one processor</li>
+                        <li><span class="highlight">Compiler Scheduling:</span> Network traffic planned at compile time</li>
+                    </ul>
+                </div>
+                
+                <div class="citation">
+                    ISCA 2022: "Software-defined tensor streaming multiprocessor enables linear scaling"
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 14: Scaling Performance (原Slide 12) -->
+        <div class="slide" id="slide14">
+            <div class="slide-content">
+                <h3>Scaling Performance</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th># of Chips</th>
+                        <th>Effective Bandwidth</th>
+                        <th>Latency Overhead</th>
+                        <th>Utilization</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>80 TB/s</td>
+                        <td>0%</td>
+                        <td>95%</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>640 TB/s</td>
+                        <td>2%</td>
+                        <td>93%</td>
+                    </tr>
+                    <tr>
+                        <td>64</td>
+                        <td>5.1 PB/s</td>
+                        <td>5%</td>
+                        <td>90%</td>
+                    </tr>
+                </table>
+                
+                <p><span class="highlight">Key Result:</span> Near-linear scaling to 1000+ chips</p>
+            </div>
+        </div>
+        
+        <!-- Slide 15: Performance Evaluation (原Slide 13) -->
+        <div class="slide" id="slide15">
+            <div class="slide-content">
+                <h2>7. Performance Evaluation</h2>
+                <h3>ISCA 2020 Results</h3>
+                
+                <div class="technical-diagram">
+                    <h4>ResNet-50 Inference (Batch Size 1)</h4>
+                    <ul>
+                        <li><span class="highlight">TSP:</span> 20.4K images/second</li>
+                        <li><span class="highlight">GPU (V100):</span> 5.1K images/second</li>
+                        <li><span class="highlight">Speedup:</span> 4× improvement</li>
+                        <li><span class="highlight">Power:</span> 150W vs 300W (2× efficiency)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 16: LLM Metrics (原Slide 14) -->
+        <div class="slide" id="slide16">
+            <div class="slide-content">
+                <h3>LLM Inference Metrics</h3>
+                <table class="comparison-table">
+                    <tr>
+                        <th>Metric</th>
+                        <th>GPU (A100)</th>
+                        <th>LPU (Groq)</th>
+                        <th>Improvement</th>
+                    </tr>
+                    <tr>
+                        <td>Tokens/sec</td>
+                        <td>150-200</td>
+                        <td>400-500</td>
+                        <td>2.5×</td>
+                    </tr>
+                    <tr>
+                        <td>TTFT</td>
+                        <td>200-500ms</td>
+                        <td>50-100ms</td>
+                        <td>4×</td>
+                    </tr>
+                    <tr>
+                        <td>Power/Token</td>
+                        <td>1.0×</td>
+                        <td>0.6×</td>
+                        <td>40% reduction</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Slide 17: Commercial Implications (原Slide 15) -->
+        <div class="slide" id="slide17">
+            <div class="slide-content">
+                <h2>8. Commercial Implications</h2>
+                <h3>From Architecture to Value</h3>
+                
+                <div class="technical-diagram">
+                    <h4>Technical Advantages → Business Value</h4>
+                    <ul>
+                        <li><span class="highlight">Determinism → SLA Guarantees:</span> Predictable performance for enterprise</li>
+                        <li><span class="highlight">Low Latency → Real-time Apps:</span> Chat, coding, gaming AI</li>
+                        <li><span class="highlight">Energy Efficiency → TCO Reduction:</span> Lower operating costs</li>
+                        <li><span class="highlight">Linear Scaling → Future-proof:</span> Add chips as needed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 18: Market Positioning (原Slide 16) -->
+        <div class="slide" id="slide18">
+            <div class="slide-content">
+                <h3>Market Positioning</h3>
+                <ul>
+                    <li><span class="highlight">Niche Focus:</span> Inference-only specialization</li>
+                    <li><span class="highlight">Early Adopters:</span> Real-time AI applications</li>
+                    <li><span class="highlight">Ecosystem Challenge:</span> CUDA dominance</li>
+                    <li><span class="highlight">Long-term Play:</span> Inference market growth</li>
+                </ul>
+                
+                <p><span class="highlight">Strategic Insight:</span> Groq is not competing with Nvidia on training, but creating new inference market</p>
+            </div>
+        </div>
+        
+        <!-- Slide 19: Conclusion (原Slide 17) -->
+        <div class="slide" id="slide19">
+            <div class="slide-content">
+                <h2>9. Conclusion & Future Work</h2>
+                <h3>Technical Contributions</h3>
+                
+                <div class="technical-diagram">
+                    <h4>Key Innovations (ISCA 2020/2022)</h4>
+                    <ol>
+                        <li><span class="highlight">Spatial VLIW Architecture:</span> Eliminates control overhead</li>
+                        <li><span class="highlight">Deterministic Execution:</span> Predictable performance</li>
+                        <li><span class="highlight">Compiler-Driven Design:</span> Software-defined hardware</li>
+                        <li><span class="highlight">Linear Multi-chip Scaling:</span> Software-defined networks</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 20: Future Work & Q&A (原Slide 18) -->
+        <div class="slide" id="slide20">
+            <div class="slide-content">
+                <h3>Future Research Directions</h3>
+                <ul>
+                    <li><span class="highlight">Compiler Optimization:</span> Reduce compile times</li>
+                    <li><span class="highlight">Model Support:</span> Larger than SRAM capacity</li>
+                    <li><span class="highlight">Mixed Precision:</span> FP8, INT4 quantization</li>
+                    <li><span class="highlight">New Workloads:</span> Beyond transformers</li>
+                </ul>
+                
+                <h3 style="margin-top: 2rem;">Q&A</h3>
+                <p>Thank you for your attention.</p>
+                <div class="citation">
+                    Presented based on: Abts et al., ISCA 2020 & 2022
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="slide-nav">
+        <button id="prev-btn">← Previous</button>
+        <button id="next-btn">Next →</button>
+    </div>
+    
+    <div class="slide-counter">
+        <span id="slide-counter-text">Slide 1 of 20</span> • Use ← → keys or buttons
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progress = document.getElementById('progress');
+            const slideCounter = document.getElementById('slide-counter-text');
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+            
+            // Initialize first slide
+            goToSlide(0);
+            updateProgress();
+            updateCounter();
+            
+            // Navigation functions
+            function goToSlide(index) {
+                if (index < 0 || index >= totalSlides) return;
+                
+                slides[currentSlide].classList.remove('active');
+                currentSlide = index;
+                slides[currentSlide].classList.add('active');
+                
+                updateProgress();
+                updateCounter();
+            }
+            
+            function nextSlide() {
+                goToSlide(currentSlide + 1);
+            }
+            
+            function prevSlide() {
+                goToSlide(currentSlide - 1);
+            }
+            
+            function updateProgress() {
+                const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+                progress.style.width = `${progressPercent}%`;
+            }
+            
+            function updateCounter() {
+                slideCounter.textContent = `Slide ${currentSlide + 1} of ${totalSlides}`;
+            }
+            
+            // Button events
+            prevBtn.addEventListener('click', prevSlide);
+            nextBtn.addEventListener('click', nextSlide);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                    nextSlide();
+                    e.preventDefault();
+                } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                    prevSlide();
+                    e.preventDefault();
+                }
+            });
+            
+            // Touch swipe for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swipe left - next slide
+                        nextSlide();
+                    } else {
+                        // Swipe right - previous slide
+                        prevSlide();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
