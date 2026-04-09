@@ -185,6 +185,32 @@
             border-top: 1px solid #475569;
         }
         
+        /* 双图对比布局 */
+        .dual-image-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+        }
+        
+        .image-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        
+        .image-box-title {
+            font-size: 1.2rem;
+            color: #60a5fa;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
         /* 专业图表样式 */
         .axis {
             stroke: #94a3b8;
@@ -442,6 +468,12 @@
             .slide-title {
                 font-size: 2.2rem;
             }
+            
+            .dual-image-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 15px;
+            }
         }
         
         @media (max-width: 768px) {
@@ -545,7 +577,7 @@
                                 
                                 <div class="key-point">
                                     <h3>演讲结构</h3>
-                                    <p>1. GTC关键图表解析 • 2. Groq LPU技术架构 • 3. AFD分离与三大挑战 • 4. 解决方案与展望</p>
+                                    <p>1. GTC关键图表解析 • 2. Groq LPU技术架构 • 3. 芯片架构对比 • 4. 集群互联架构 • 5. 确定性执行原理 • 6. AFD分离与三大挑战 • 7. 解决方案与展望</p>
                                 </div>
                             </div>
                         </div>
@@ -637,90 +669,92 @@
             </div>
         </div>
         
-        <!-- Slide 3: Groq LPU技术架构 -->
+        <!-- Slide 3: GPU vs LPU芯片架构对比 -->
         <div class="slide" id="slide3">
             <div class="slide-content">
                 <div class="slide-header">
-                    <h1 class="slide-title">Groq LPU技术架构</h1>
-                    <p class="slide-subtitle">用算力和容量换极致带宽</p>
+                    <h1 class="slide-title">芯片架构对比</h1>
+                    <p class="slide-subtitle">GPU vs LPU：完全不同的设计哲学</p>
                 </div>
                 
                 <div class="content-area">
                     <div class="text-panel">
                         <div class="text-content">
                             <div class="text-scroll">
-                                <h3 class="section-title">2.1 商业背景：产能是第一性</h3>
-                                <ul class="bullet-list">
-                                    <li><span class="highlight">交易结构</span>：2025年底，英伟达以200亿美元获得Groq的IP授权并收编核心团队</li>
-                                    <li><span class="highlight">战略考量</span>：IP license + hiring（非法律意义上的收购），避免反垄断审查</li>
-                                    <li><span class="highlight">产能战略</span>：三星SF4（4nm），不占台积电N3产能，不需要HBM，不需要CoWoS</li>
-                                </ul>
-                                
-                                <div class="data-box">
-                                    <p><strong>小结：</strong> LP30用三星SF4，不占台积电N3产能，不需要HBM，不需要CoWoS。英伟达在不牺牲GPU产能的情况下，开辟了一条完全独立的增量产线。产能，是这笔交易的第一性。</p>
+                                <h3 class="section-title">GPU架构：通用计算优化</h3>
+                                <div class="key-point">
+                                    <h3>设计理念</h3>
+                                    <p>GPU是为通用并行计算而设计，强调灵活性和适应性：</p>
+                                    <ul class="bullet-list">
+                                        <li><span class="highlight">多层次缓存体系</span>：L1/L2/L3缓存 + HBM内存</li>
+                                        <li><span class="highlight">动态调度机制</span>：运行时硬件调度</li>
+                                        <li><span class="highlight">乱序执行</span>：填满流水线，提高利用率</li>
+                                        <li><span class="highlight">复杂控制逻辑</span>：分支预测、重排序缓冲区等</li>
+                                    </ul>
                                 </div>
-                                
-                                <h3 class="section-title">2.2 LP30芯片架构对比</h3>
-                                
-                                <table class="comparison-table">
-                                    <thead>
-                                        <tr>
-                                            <th>指标</th>
-                                            <th>LP30（单卡）</th>
-                                            <th>Rubin Ultra GPU（单卡）</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><span class="highlight">容量</span></td>
-                                            <td>500 MB SRAM（片上）</td>
-                                            <td>288 GB HBM4（片外）</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="highlight">带宽</span></td>
-                                            <td>150 TB/s</td>
-                                            <td>22 TB/s</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="highlight">FP8算力（dense）</span></td>
-                                            <td>1.2 PFLOPS</td>
-                                            <td>~15.75 PFLOPS</td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="highlight">算力带宽比</span></td>
-                                            <td><span class="warning">4</span></td>
-                                            <td><span class="warning">~358</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><span class="highlight">工艺/封装</span></td>
-                                            <td>三星SF4，单die，无先进封装</td>
-                                            <td>台积电N3P + CoWoS + HBM4</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
                                 
                                 <div class="key-point">
-                                    <h3>算力带宽比 = 4 的含义</h3>
-                                    <p>batch size超过个位数就进入Compute-bound，SRAM带宽优势消失。</p>
-                                    <p><span class="warning">设计哲学</span>：只做一件事——在batch=1以极低延迟完成内存密集型运算。</p>
+                                    <h3>GPU面积分配</h3>
+                                    <ul class="bullet-list">
+                                        <li><span class="warning">~40%</span>：计算单元（CUDA Core, Tensor Core）</li>
+                                        <li><span class="warning">~30%</span>：缓存层次和控制逻辑</li>
+                                        <li><span class="warning">~20%</span>：互连和接口（NVLink, PCIe）</li>
+                                        <li><span class="warning">~10%</span>：其他（时钟、供电等）</li>
+                                    </ul>
                                 </div>
                                 
-                                <h3 class="section-title">2.3 集群及互联架构</h3>
-                                <ul class="bullet-list">
-                                    <li><span class="highlight">ComputeTray（1U计算托盘）</span>：8颗LP30 + 2颗Altera FPGA（FEL）+ Intel Granite Rapids CPU + BlueField-4网卡</li>
-                                    <li><span class="highlight">Fabric Expansion Logic（FEL）</span>：2颗FPGA挂载256GB DDR5，协议桥接 + 参数暂存</li>
-                                    <li><span class="highlight">互连拓扑</span>：四级带宽衰减（5.6T → 3.1T → 400G → 400G）</li>
-                                </ul>
+                                <h3 class="section-title">LPU架构：推理专用优化</h3>
+                                <div class="key-point">
+                                    <h3>设计理念</h3>
+                                    <p>LPU是为确定性AI推理而设计，强调低延迟和可预测性：</p>
+                                    <ul class="bullet-list">
+                                        <li><span class="highlight">单层SRAM存储</span>：没有缓存层次，直接访问</li>
+                                        <li><span class="highlight">编译器静态调度</span>：编译时决定一切</li>
+                                        <li><span class="highlight">确定性执行</span>：消除运行时不确定性</li>
+                                        <li><span class="highlight">简化控制逻辑</span>：去掉分支预测、乱序执行等</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="key-point">
+                                    <h3>LPU面积分配</h3>
+                                    <ul class="bullet-list">
+                                        <li><span class="highlight">~70%</span>：SRAM存储（500MB）</li>
+                                        <li><span class="highlight">~15%</span>：计算单元（MXM, VXM等）</li>
+                                        <li><span class="highlight">~10%</span>：互连（C2C SerDes）</li>
+                                        <li><span class="highlight">~5%</span>：控制逻辑和其他</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="data-box">
+                                    <p><strong>核心差异：</strong> GPU用复杂性换取通用性，LPU用专用性换取确定性。GPU的大量面积用于"等"和"猜"（缓存、预测），LPU将这些面积全部换成SRAM，实现极致带宽。</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="visual-panel">
                         <div class="chart-container">
-                            <div class="chart-title">LPU vs GPU架构对比</div>
+                            <div class="chart-title">芯片架构对比图</div>
                             <div class="chart-area">
-                                <div class="professional-chart" id="architecture-chart">
-                                    <!-- 架构对比图表将通过JavaScript生成 -->
+                                <div class="professional-chart">
+                                    <div class="dual-image-container">
+                                        <div class="image-box">
+                                            <div class="image-box-title">GPU架构</div>
+                                            <img src="https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                                                 alt="GPU芯片架构示意图" class="chart-image">
+                                            <div class="image-caption" style="margin-top: 5px;">
+                                                典型GPU芯片布局：计算单元、缓存层次、控制逻辑等混合分布
+                                            </div>
+                                        </div>
+                                        <div class="image-box">
+                                            <div class="image-box-title">LP30芯片布局</div>
+                                            <img src="https://mmbiz.qpic.cn/sz_mmbiz_png/kEFHVffKibqOyRicOAmMentPWk4kvW16sj5tzwVGcictKLUWQhTRBygM8ApOWbPksubXrL2BmicwrNt2B2SqNnYj2IbqzoEzRjtsmwMIf74B614/640?wx_fmt=png&from=appmsg" 
+                                                 alt="LP30芯片布局图" class="chart-image">
+                                            <div class="image-caption" style="margin-top: 5px;">
+                                                LP30 Die Layout：大量面积被SRAM占据，计算单元（MXM）面积极小。省去GPU的调度单元面积，全部换成了SRAM。（Source: NVIDIA）
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -729,8 +763,104 @@
             </div>
         </div>
         
-        <!-- Slide 4: 确定性执行原理 -->
+        <!-- Slide 4: 集群及互联架构 -->
         <div class="slide" id="slide4">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1 class="slide-title">集群及互联架构</h1>
+                    <p class="slide-subtitle">四级带宽衰减与互连拓扑</p>
+                </div>
+                
+                <div class="content-area">
+                    <div class="text-panel">
+                        <div class="text-content">
+                            <div class="text-scroll">
+                                <h3 class="section-title">4.1 ComputeTray（1U计算托盘）</h3>
+                                <ul class="bullet-list">
+                                    <li><span class="highlight">组成</span>：8颗LP30 + 2颗Altera FPGA（FEL）+ Intel Granite Rapids CPU + BlueField-4网卡</li>
+                                    <li><span class="highlight">规格</span>：SRAM合计4GB / 1.2 PB/s，FP8算力9.6 PFLOPS</li>
+                                    <li><span class="highlight">Fabric Expansion Logic（FEL）</span>：2颗FPGA挂载256GB DDR5，协议桥接 + 参数暂存</li>
+                                </ul>
+                                
+                                <h3 class="section-title">4.2 互连拓扑与四级带宽衰减</h3>
+                                <div class="key-point">
+                                    <h3>四级带宽衰减</h3>
+                                    <p>带宽从内到外衰减<span class="warning">14倍</span>（5.6T → 400G）。GPU ↔ LPU的通信恰好走最外层的以太网——这个带宽层级直接决定了AFD的通信开销。</p>
+                                </div>
+                                
+                                <table class="comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>去向</th>
+                                            <th>Link 数</th>
+                                            <th>带宽</th>
+                                            <th>特点</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="highlight">Tray内全连接</span></td>
+                                            <td>56</td>
+                                            <td>5.6 Tbps</td>
+                                            <td>C2C直连，确定性，延迟最低</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="highlight">Tray间（机柜内）</span></td>
+                                            <td>31</td>
+                                            <td>3.1 Tbps</td>
+                                            <td>背板走线，仍然是C2C</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="warning">机柜间</span></td>
+                                            <td>4</td>
+                                            <td>400 Gbps</td>
+                                            <td><strong>前面板出去 → 以太网</strong>，延迟和抖动显著增大</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="warning">FEL FPGA</span></td>
+                                            <td>4</td>
+                                            <td>400 Gbps</td>
+                                            <td>参数加载 + 以太网桥接</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <div class="key-point">
+                                    <h3>通信延迟影响</h3>
+                                    <ul class="bullet-list">
+                                        <li><span class="highlight">Tray内通信</span>：~100ns（理想）</li>
+                                        <li><span class="highlight">机柜间通信</span>：~10μs（理想）到 ~100μs（实际）</li>
+                                        <li><span class="warning">影响</span>：AFD每层需要2次跨机柜通信，每次7跳，通信可能吃掉40%的耗时</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="data-box">
+                                    <p><strong>架构挑战：</strong> LPU的高带宽优势在芯片内部，但跨机柜通信受限于以太网带宽。这是AFD分离架构必须面对的通信瓶颈，也是当前系统最大的性能限制之一。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="visual-panel">
+                        <div class="chart-container">
+                            <div class="chart-title">ComputeTray内部互连架构</div>
+                            <div class="chart-area">
+                                <div class="professional-chart" id="interconnect-chart">
+                                    <img src="https://mmbiz.qpic.cn/sz_mmbiz_png/kEFHVffKibqM60BncTNY4BlibbfoHGkZV4TzIuWNbZBIkoMDHzTqpea9WfOgEXLwHOJeCamA32kV81cW0ibvTzTP6icbuGgIvteV6vBcWlNr6C8/640?wx_fmt=png&from=appmsg" 
+                                         alt="ComputeTray内部互连图" class="chart-image">
+                                </div>
+                            </div>
+                            <div class="image-caption">
+                                ComputeTray内部互连。（Source: zartbot）
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 5: 确定性执行原理 -->
+        <div class="slide" id="slide5">
             <div class="slide-content">
                 <div class="slide-header">
                     <h1 class="slide-title">确定性执行原理</h1>
@@ -796,8 +926,8 @@
             </div>
         </div>
         
-        <!-- Slide 5: AFD分离与三大挑战 -->
-        <div class="slide" id="slide5">
+        <!-- Slide 6: AFD分离与三大挑战 -->
+        <div class="slide" id="slide6">
             <div class="slide-content">
                 <div class="slide-header">
                     <h1 class="slide-title">AFD分离与三大挑战</h1>
@@ -808,7 +938,7 @@
                     <div class="text-panel">
                         <div class="text-content">
                             <div class="text-scroll">
-                                <h3 class="section-title">3.1 从PD分离到AFD分离</h3>
+                                <h3 class="section-title">5.1 从PD分离到AFD分离</h3>
                                 <div class="key-point">
                                     <h3>PD分离（Prefill-Decode分离）</h3>
                                     <p><span class="highlight">原理</span>：Prefill（上下文编码）和Decode（自回归生成）对延迟的敏感度不同</p>
@@ -829,7 +959,7 @@
                                     <p><span class="highlight">基础</span>：必须靠异构硬件</p>
                                 </div>
                                 
-                                <h3 class="section-title">3.2 挑战一：容量——SRAM放不下万亿模型</h3>
+                                <h3 class="section-title">5.2 挑战一：容量——SRAM放不下万亿模型</h3>
                                 <ul class="bullet-list">
                                     <li><span class="highlight">GPT MoE 2T模型</span>：W4量化后约1 TB</li>
                                     <li><span class="highlight">LPX机柜SRAM</span>：128 GB（256颗 × 500MB）</li>
@@ -837,7 +967,7 @@
                                     <li><span class="highlight">FEL DDR5的局限性</span>：256 GB容量，~400 GB/s带宽，比SRAM慢375倍</li>
                                 </ul>
                                 
-                                <h3 class="section-title">3.3 挑战二：通信——每层两次跨机柜以太网</h3>
+                                <h3 class="section-title">5.3 挑战二：通信——每层两次跨机柜以太网</h3>
                                 <div class="key-point">
                                     <h3>AFD通信模式</h3>
                                     <p style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin: 10px 0;">
@@ -850,7 +980,7 @@
                                     </ul>
                                 </div>
                                 
-                                <h3 class="section-title">3.4 挑战三：调度——BSP失效带来的颠覆式需求</h3>
+                                <h3 class="section-title">5.4 挑战三：调度——BSP失效带来的颠覆式需求</h3>
                                 <div class="key-point">
                                     <h3>BSP（Bulk Synchronous Parallel）模型的失效</h3>
                                     <p><span class="highlight">传统模式</span>：所有芯片完成当前层 → 全局同步 → 进入下一层</p>
@@ -880,8 +1010,8 @@
             </div>
         </div>
         
-        <!-- Slide 6: 解决方案与展望 -->
-        <div class="slide" id="slide6">
+        <!-- Slide 7: 解决方案与展望 -->
+        <div class="slide" id="slide7">
             <div class="slide-content">
                 <div class="slide-header">
                     <h1 class="slide-title">解决方案与展望</h1>
@@ -892,7 +1022,7 @@
                     <div class="text-panel">
                         <div class="text-content">
                             <div class="text-scroll">
-                                <h3 class="section-title">4.1 软件解法：全异步调度框架</h3>
+                                <h3 class="section-title">6.1 软件解法：全异步调度框架</h3>
                                 <div class="key-point">
                                     <h3>核心思想</h3>
                                     <p><span class="highlight">解耦</span>：GPU和LPU不再强同步</p>
@@ -909,7 +1039,7 @@
                                     </ul>
                                 </div>
                                 
-                                <h3 class="section-title">4.2 硬件升级路径</h3>
+                                <h3 class="section-title">6.2 硬件升级路径</h3>
                                 <div class="key-point">
                                     <h3>短期（2026-2027）：FEL ASIC化</h3>
                                     <p><span class="highlight">目标</span>：用定制ASIC替换FPGA</p>
@@ -930,7 +1060,7 @@
                                     <p><span class="highlight">收益</span>：彻底消除数据拷贝，实现真正的异构计算</p>
                                 </div>
                                 
-                                <h3 class="section-title">4.3 结论：确定性计算的新范式</h3>
+                                <h3 class="section-title">6.3 结论：确定性计算的新范式</h3>
                                 <div class="data-box">
                                     <p><strong>技术范式转移：</strong> Groq LPU代表了一种根本性的技术范式转移：从用复杂度兜住不确定性，到用确定性换掉复杂度。</p>
                                 </div>
@@ -977,14 +1107,14 @@
         </div>
         
         <div class="slide-counter">
-            第 <span id="current-slide">1</span> 页 / 共 <span id="total-slides">6</span> 页
+            第 <span id="current-slide">1</span> 页 / 共 <span id="total-slides">7</span> 页
         </div>
     </div>
 
     <script>
         // 幻灯片管理
         let currentSlide = 1;
-        const totalSlides = 6;
+        const totalSlides = 7;
         
         function showSlide(n) {
             // 隐藏所有幻灯片
@@ -1070,15 +1200,18 @@
                     // 第二页已经使用静态图片，无需生成图表
                     break;
                 case 3:
-                    generateArchitectureChart();
+                    // 第三页使用静态图片，无需生成图表
                     break;
                 case 4:
-                    generateExecutionChart();
+                    // 第四页使用静态图片，无需生成图表
                     break;
                 case 5:
-                    generateAFDChart();
+                    generateExecutionChart();
                     break;
                 case 6:
+                    generateAFDChart();
+                    break;
+                case 7:
                     generateRoadmapChart();
                     break;
             }
@@ -1115,38 +1248,7 @@
             `;
         }
         
-        // 图表3: 架构对比图表
-        function generateArchitectureChart() {
-            const container = document.getElementById('architecture-chart');
-            if (!container) return;
-            
-            container.innerHTML = `
-                <div class="bar-chart">
-                    <div class="bar" style="height: 15%; background: linear-gradient(to top, #ef4444, #f87171);">
-                        <div class="bar-value">1.2 PFLOPS</div>
-                        <div class="bar-label">LPU算力</div>
-                    </div>
-                    <div class="bar" style="height: 100%; background: linear-gradient(to top, #ef4444, #f87171); margin-left: 15px;">
-                        <div class="bar-value">150 TB/s</div>
-                        <div class="bar-label">LPU带宽</div>
-                    </div>
-                    <div class="bar" style="height: 100%; background: linear-gradient(to top, #3b82f6, #60a5fa); margin-left: 30px;">
-                        <div class="bar-value">15.75 PFLOPS</div>
-                        <div class="bar-label">GPU算力</div>
-                    </div>
-                    <div class="bar" style="height: 22%; background: linear-gradient(to top, #3b82f6, #60a5fa); margin-left: 15px;">
-                        <div class="bar-value">22 TB/s</div>
-                        <div class="bar-label">GPU带宽</div>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 15px; color: #94a3b8; font-size: 0.85rem;">
-                    <p>算力带宽比: LPU=4 vs GPU=358</p>
-                    <p>LPU用算力换带宽，专门优化batch=1场景</p>
-                </div>
-            `;
-        }
-        
-        // 图表4: 执行时间线图表
+        // 图表5: 执行时间线图表
         function generateExecutionChart() {
             const container = document.getElementById('execution-chart');
             if (!container) return;
@@ -1182,7 +1284,7 @@
             `;
         }
         
-        // 图表5: AFD分离架构图表
+        // 图表6: AFD分离架构图表
         function generateAFDChart() {
             const container = document.getElementById('afd-chart');
             if (!container) return;
@@ -1222,7 +1324,7 @@
             `;
         }
         
-        // 图表6: 技术演进路径图表
+        // 图表7: 技术演进路径图表
         function generateRoadmapChart() {
             const container = document.getElementById('roadmap-chart');
             if (!container) return;
